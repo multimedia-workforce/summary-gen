@@ -1,0 +1,27 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/backend.Dockerfile
+    ports:
+      - 443:443
+      - 50051:50051
+    environment:
+      - GRPC_LISTEN_ADDRESS=0.0.0.0:50051
+      - OPENAI_ENDPOINT=http://host.docker.internal:11434
+      - OPENAI_TOKEN=""
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/frontend.Dockerfile
+    ports:
+      - 8080:3000
+    depends_on:
+      - backend
+    environment:
+      - GRPC_HEARTBEAT_INTERVAL=2000
+      - GRPC_LISTEN_ADDRESS=backend:50051
+      - BODY_SIZE_LIMIT=Infinity
