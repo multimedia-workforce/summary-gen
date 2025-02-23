@@ -1,12 +1,16 @@
 # Meeting Summary
 
-This project is an automatic meeting summarization tool that transcribes and summarizes video/audio recordings using [whisper.cpp](https://github.com/ggerganov/whisper.cpp). It processes media files using `ffmpeg`, transcribes them with whisper, and provides a gRPC-based API. The frontend interface is built using SvelteKit.
+This project is an automatic meeting summarization tool that transcribes and summarizes video/audio recordings using [whisper.cpp](https://github.com/ggerganov/whisper.cpp). It processes media files using `ffmpeg`, transcribes them with `whisper`, and provides a gRPC-based API. The frontend interface is built using SvelteKit.
 
 ## Features
-- Transcribe audio and video files into text
-- Generate meeting summaries from transcripts
-- gRPC-based communication between the backend and frontend
-- SvelteKit-based web interface for user interaction
+- [x] Transcribe audio and video files into text
+- [ ] (To Be Implemented) Generate meeting summaries from transcripts
+- [x] gRPC-based communication between the backend and frontend
+- [x] SvelteKit-based web interface for user interaction
+
+Here is a preview of the current working state, which only performs transcription:
+![image](https://github.com/user-attachments/assets/5671518b-7bf9-42cd-9328-a8969485b826)
+
 
 ## Installation
 
@@ -32,7 +36,6 @@ Ensure you have the following dependencies installed before building and running
  - [CMake](https://cmake.org)
  - [LLVM](https://llvm.org)
  - [Ninja](https://ninja-build.org)
- - [VSCode](https://code.visualstudio.com)
  - [nodejs](https://nodejs.org/)
  - [ffmpeg libraries](https://ffmpeg.org)
  - [protobuf](https://protobuf.dev)
@@ -44,6 +47,8 @@ Download a Whisper model before running the project. Models are available at [Wh
 cd core/models
 wget https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin
 ```
+
+Note that this must not be done when the project is started via docker compose.
 
 ### Installation
 Clone the repository and navigate to the project directory:
@@ -66,4 +71,4 @@ cd frontend
 npm install
 npm run dev
 ```
-The frontend should now be available at `http://localhost:5173`.
+The frontend should now be available at http://localhost:5173.
