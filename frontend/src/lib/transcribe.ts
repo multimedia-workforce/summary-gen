@@ -21,29 +21,48 @@ const client = new proto.Transcriber(TRANSCRIBER_URL, grpc.credentials.createIns
 type TranscribeCallback = (message: string) => void;
 
 /**
- * Sends an MP4 file buffer to the gRPC transcribe service and receives a transcript stream.
- * @param videoBuffer - The video file as a Buffer
- * @returns Async Generator yielding transcribed text
+ * Sends an file buffer to the gRPC transcribe service and receives a transcript stream.
+ * @param reader The video/audio file as a readable stream
+ * @returns Promise
  */
-export async function transcribe(videoBuffer: Buffer, callback: TranscribeCallback) {
-    const call = client.transcribe();
-    
-    // Create a readable stream from the buffer and send it in chunks
-    const chunkSize = 64 * 1024; // 64 KB per chunk
-    for (let i = 0; i < videoBuffer.length; i += chunkSize) {
-        const chunk = videoBuffer.subarray(i, i + chunkSize);
+export async function transcribe(reader: ReadableStreamDefaultReader, callback: TranscribeCallback): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+        const call = client.transcribe();
+
+        call.on('error', (error: Error) => {
+            reject(error.message);
+        });
+
+        call.on('end', () => {
+            resolve();
+        });
+
         try {
-            call.write({ data: chunk });
-        } catch(error) {
-            return Promise.reject((error as Error).message);
+            const chunkSize = 64 * 1024;
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                let buffer = Buffer.from(value);
+                while (buffer.length > 0) {
+                    const chunk = buffer.subarray(0, Math.min(chunkSize, buffer.length));
+                    buffer = buffer.subarray(chunk.length);
+                    call.write({ data: chunk });
+                }
+            }
+
+            call.end();
+        } catch (error) {
+            reject(error);
         }
-    }
-    
-    call.end(); // Signal end of transmission
-    call.on('data', (transcription: any) => {
-        callback(transcription.text);
+
+        call.on('data', (transcription: any) => {
+            callback(transcription.text);
+        });
     });
 }
+
+
 
 /**
  * Calls the heartbeat method to check if the server is responsive.

@@ -20,3 +20,4 @@ services:
       - MEETING_SUM_HEARTBEAT_INTERVAL=2000
       - MEETING_SUM_TRANSCRIBER_URL=backend:50051
       - MEETING_SUM_PROTO_DIR=./proto
+      - BODY_SIZE_LIMIT=Infinity

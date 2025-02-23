@@ -14,27 +14,23 @@
             : "file:bg-blue-300 hover:file:bg-blue-300",
     );
 
-    async function uploadVideo(
+    async function uploadMedia(
         event: Event & { currentTarget: HTMLInputElement },
     ) {
-        if (!event.currentTarget.files) {
-            return;
-        }
+        if (!event.currentTarget.files) return;
 
         const file = event.currentTarget.files[0];
         if (!file) return;
 
         const formData = new FormData();
-        formData.append("video", file);
+        formData.append("file", file);
 
         const response = await fetch("/transcribe", {
             method: "POST",
-            body: file,
+            body: formData,
         });
 
-        if (!response.body) {
-            return;
-        }
+        if (!response.body) return;
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
@@ -67,7 +63,7 @@
     >
         <h1 class="text-2xl font-bold mb-4">Meeting Summary</h1>
         <p class="mb-2 text-sm text-gray-600">
-            Upload an MP4 file and get its transcribed summary.
+            Upload an audio/video file and get its transcribed summary.
         </p>
 
         <div class="flex items-center mb-4 justify-between">
@@ -77,7 +73,7 @@
                     readonly={!isServerOnline}
                     type="file"
                     accept="video/mp4"
-                    onchange={uploadVideo}
+                    onchange={uploadMedia}
                     class="block w-full text-sm text-gray-500
                 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0
                 file:text-sm file:font-semibol file:text-white {uploadInputColors}"
