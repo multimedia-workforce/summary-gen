@@ -3,28 +3,35 @@
     import type { PageData } from "./$types";
 
     const { data }: { data: PageData } = $props();
+    let file: File | null = $state(null);
     let transcript = $state("");
     let isServerOnline = $state(false);
     let serverStatusColor = $derived(
         isServerOnline ? "text-green-500" : "text-red-400",
     );
-    let uploadInputColors = $derived(
+    let selectFileColors = $derived(
         isServerOnline
             ? "file:bg-blue-500 hover:file:bg-blue-600"
             : "file:bg-blue-300 hover:file:bg-blue-300",
     );
+    let transcribeButtonColors = $derived(
+        isServerOnline && file !== null
+            ? "bg-blue-500 hover:bg-blue-600"
+            : "bg-blue-300 file:bg-blue-300",
+    );
 
-    async function uploadMedia(
-        event: Event & { currentTarget: HTMLInputElement },
-    ) {
+    function selectFile(event: Event & { currentTarget: HTMLInputElement }) {
         if (!event.currentTarget.files) return;
+        file = event.currentTarget.files[0];
+    }
 
-        const file = event.currentTarget.files[0];
-        if (!file) return;
+    async function uploadMedia() {
+        if (!file || !isServerOnline) return;
 
         const formData = new FormData();
         formData.append("file", file);
 
+        transcript = "";
         const response = await fetch("/transcribe", {
             method: "POST",
             body: formData,
@@ -43,6 +50,7 @@
     }
 
     function checkHeartbeat() {
+        console.log("heartbeat");
         fetch("/heartbeat")
             .then((response) => response.json())
             .then((data) => (isServerOnline = data.status === "OK"))
@@ -73,10 +81,10 @@
                     readonly={!isServerOnline}
                     type="file"
                     accept="video/mp4"
-                    onchange={uploadMedia}
+                    onchange={selectFile}
                     class="block w-full text-sm text-gray-500
                 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0
-                file:text-sm file:font-semibol file:text-white {uploadInputColors}"
+                file:text-sm file:font-semibold file:text-white {selectFileColors}"
                 />
             </div>
             <p class="text-lg font-bold">
@@ -87,12 +95,19 @@
             </p>
         </div>
 
+        <button
+            onclick={uploadMedia}
+            class="py-2 px-4 rounded-lg border-0 text-sm font-semibold text-white {transcribeButtonColors}"
+        >
+            Transcribe
+        </button>
+
         <div
             class="mt-6 text-left bg-gray-50 p-4 rounded-lg border border-gray-300"
         >
-            <h2 class="font-semibold mb-2">Transcription Result:</h2>
+            <h2 class="font-semibold mb-2">Transcription:</h2>
             <p class="text-gray-800 whitespace-pre-line">
-                {transcript || "Nothing yet..."}
+                {transcript || "..."}
             </p>
         </div>
     </div>
