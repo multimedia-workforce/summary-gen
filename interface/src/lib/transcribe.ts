@@ -56,7 +56,6 @@ export async function heartbeat(): Promise<boolean> {
         await heartbeatPromise({});
         return true;
     } catch (error) {
-        console.error('Heartbeat failed:', error);
         return false;
     }
 }
