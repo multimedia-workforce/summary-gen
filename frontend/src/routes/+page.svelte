@@ -7,17 +7,17 @@
     let transcript = $state("");
     let isServerOnline = $state(false);
     let serverStatusColor = $derived(
-        isServerOnline ? "text-green-500" : "text-red-400",
+        isServerOnline ? "text-green-400" : "text-red-400",
     );
     let selectFileColors = $derived(
         isServerOnline
-            ? "file:bg-blue-500 hover:file:bg-blue-600"
-            : "file:bg-blue-300 hover:file:bg-blue-300",
+            ? "file:bg-indigo-900 hover:file:bg-indigo-800 file:text-gray-200"
+            : "file:bg-indigo-900 hover:file:bg-indigo-900 file:text-gray-500",
     );
     let transcribeButtonColors = $derived(
         isServerOnline && file !== null
-            ? "bg-blue-500 hover:bg-blue-600"
-            : "bg-blue-300 file:bg-blue-300",
+            ? "bg-indigo-900 hover:bg-indigo-800 text-gray-200"
+            : "bg-indigo-900 hover:bg-indigo-900 text-gray-500",
     );
 
     function selectFile(event: Event & { currentTarget: HTMLInputElement }) {
@@ -64,13 +64,27 @@
 </script>
 
 <div
-    class="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4"
+    class="min-h-screen flex flex-col items-center justify-center bg-indigo-950 p-4 font-mono text-md"
 >
     <div
-        class="flex flex-col gap-1 bg-white shadow-lg rounded-lg p-6 max-w-4xl w-full text-center"
+        class="flex flex-col bg-indigo-950 rounded-lg p-6 max-w-4xl w-full text-center"
     >
-        <h1 class="text-2xl font-bold mb-4">Meeting Summary</h1>
-        <p class="mb-2 text-sm text-gray-600">
+        <pre class="text-gray-200 leading-none p-0 m-0">
+███╗   ███╗███████╗███████╗████████╗██╗███╗   ██╗ ██████╗       
+████╗ ████║██╔════╝██╔════╝╚══██╔══╝██║████╗  ██║██╔════╝       
+██╔████╔██║█████╗  █████╗     ██║   ██║██╔██╗ ██║██║  ███╗      
+██║╚██╔╝██║██╔══╝  ██╔══╝     ██║   ██║██║╚██╗██║██║   ██║      
+██║ ╚═╝ ██║███████╗███████╗   ██║   ██║██║ ╚████║╚██████╔╝      
+╚═╝     ╚═╝╚══════╝╚══════╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝       
+                                                            
+███████╗██╗   ██╗███╗   ███╗███╗   ███╗ █████╗ ██████╗ ██╗   ██╗
+██╔════╝██║   ██║████╗ ████║████╗ ████║██╔══██╗██╔══██╗╚██╗ ██╔╝
+███████╗██║   ██║██╔████╔██║██╔████╔██║███████║██████╔╝ ╚████╔╝ 
+╚════██║██║   ██║██║╚██╔╝██║██║╚██╔╝██║██╔══██║██╔══██╗  ╚██╔╝  
+███████║╚██████╔╝██║ ╚═╝ ██║██║ ╚═╝ ██║██║  ██║██║  ██║   ██║   
+╚══════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   
+            </pre>
+        <p class="mb-2 text-gray-400">
             Upload an audio/video file and get its transcribed summary.
         </p>
 
@@ -82,33 +96,33 @@
                     type="file"
                     accept="video/mp4"
                     onchange={selectFile}
-                    class="block w-full text-sm text-gray-500
-                file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0
-                file:text-sm file:font-semibold file:text-white {selectFileColors}"
+                    class="block w-full text-gray-500
+                file:mr-4 file:py-2 file:px-4 file:rounded-lg
+                file:font-semibold {selectFileColors}"
                 />
             </div>
-            <p class="text-lg font-bold">
-                Server Status:
+            <p class="text-gray-400">
+                Heartbeat:
                 <span class={serverStatusColor}>
-                    {isServerOnline ? "Online" : "Offline"}
+                    {isServerOnline ? "Healthy ❤️" : "Unhealthy 💔"}
                 </span>
             </p>
         </div>
 
         <button
             onclick={uploadMedia}
-            class="py-2 px-4 rounded-lg border-0 text-sm font-semibold text-white {transcribeButtonColors}"
+            class="py-2 px-4 rounded-lg font-semibold {transcribeButtonColors}"
         >
             Transcribe
         </button>
 
-        <div
-            class="mt-6 text-left bg-gray-50 p-4 rounded-lg border border-gray-300"
-        >
-            <h2 class="font-semibold mb-2">Transcription:</h2>
-            <p class="text-gray-800 whitespace-pre-line">
-                {transcript || "..."}
-            </p>
-        </div>
+        {#if transcript.length > 0}
+            <div class="mt-6 text-left bg-indigo-950 shadow-sm p-4 rounded-lg">
+                <h2 class="font-semibold mb-2 text-gray-200">Transcription:</h2>
+                <p class="text-gray-200 whitespace-pre-line">
+                    {transcript || "..."}
+                </p>
+            </div>
+        {/if}
     </div>
 </div>
