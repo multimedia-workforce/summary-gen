@@ -41,19 +41,23 @@ enum {
 
 namespace {
 
+struct ReadBuffer {
+    const std::vector<u8> *buffer;
+    usize read_offset = 0;
+};
+
 // Custom read function
 int av_context_read_packet(void *opaque, uint8_t *buf, int const buf_size) {
-    const auto &buffer = *static_cast<std::vector<u8> *>(opaque);
-    static size_t read_offset = 0;
-
-    auto const remaining = buffer.size() - read_offset;
+    auto *read_buffer = static_cast<ReadBuffer *>(opaque);
+    auto const remaining = read_buffer->buffer->size() - read_buffer->read_offset;
     auto const to_read = std::min(static_cast<size_t>(buf_size), remaining);
+
     if (to_read == 0) {
         return AVERROR_EOF;
     }
 
-    std::memcpy(buf, buffer.data() + read_offset, to_read);
-    read_offset += to_read;
+    std::memcpy(buf, read_buffer->buffer->data() + read_buffer->read_offset, to_read);
+    read_buffer->read_offset += to_read;
     return static_cast<int>(to_read);
 }
 
@@ -66,15 +70,16 @@ Result<std::vector<f32>> decode_pcm32(std::vector<u8> const &buffer) {
         return std::unexpected("Could not allocate format context.");
     }
 
-    auto avio_buffer = static_cast<u8 *>(av_malloc(AVIO_BUFFER_SIZE));
+    const auto avio_buffer = static_cast<u8 *>(av_malloc(AVIO_BUFFER_SIZE));
     if (!avio_buffer) {
         avformat_close_input(&fmt_ctx);
         return std::unexpected("Could not allocate AVIO buffer.");
     }
 
     // Create custom AVIOContext
-    auto *avio_ctx = avio_alloc_context(avio_buffer, AVIO_BUFFER_SIZE, 0, (void *) (&buffer), av_context_read_packet,
-                                        nullptr, nullptr);
+    ReadBuffer read_buffer{ &buffer, 0 };
+    auto *avio_ctx = avio_alloc_context(avio_buffer, AVIO_BUFFER_SIZE, 0, &read_buffer, av_context_read_packet, nullptr,
+                                        nullptr);
     if (!avio_ctx) {
         av_free(avio_buffer);
         avformat_close_input(&fmt_ctx);
