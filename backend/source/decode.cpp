@@ -42,15 +42,15 @@ enum {
 namespace {
 
 struct ReadBuffer {
-    const std::vector<u8> *buffer;
+    std::vector<u8> const *buffer = nullptr;
     usize read_offset = 0;
 };
 
 // Custom read function
-int av_context_read_packet(void *opaque, uint8_t *buf, int const buf_size) {
+int av_context_read_packet(void *opaque, u8 *buf, int const buf_size) {
     auto *read_buffer = static_cast<ReadBuffer *>(opaque);
     auto const remaining = read_buffer->buffer->size() - read_buffer->read_offset;
-    auto const to_read = std::min(static_cast<size_t>(buf_size), remaining);
+    auto const to_read = std::min(static_cast<usize>(buf_size), remaining);
 
     if (to_read == 0) {
         return AVERROR_EOF;
@@ -187,9 +187,10 @@ Result<std::vector<f32>> decode_pcm32(std::vector<u8> const &buffer) {
                     auto const nb_samples = swr_get_out_samples(swr_ctx, frame->nb_samples);
                     std::vector<f32> frame_buffer(nb_samples);
 
-                    auto *out_buf = reinterpret_cast<uint8_t *>(frame_buffer.data());
+                    auto *out_buf = reinterpret_cast<u8 *const>(frame_buffer.data());
+                    auto const **in_buf = const_cast<u8 const **>(frame->data);
                     auto const converted_samples =
-                            swr_convert(swr_ctx, &out_buf, nb_samples, frame->data, frame->nb_samples);
+                            swr_convert(swr_ctx, &out_buf, nb_samples, in_buf, frame->nb_samples);
 
                     if (converted_samples > 0) {
                         // Append converted PCM data
@@ -203,11 +204,10 @@ Result<std::vector<f32>> decode_pcm32(std::vector<u8> const &buffer) {
 
     // **Flush remaining samples** in SwrContext to prevent truncation
     if (auto const nb_samples = swr_get_out_samples(swr_ctx, 0); nb_samples > 0) {
-        std::vector<float> frame_buffer(nb_samples);
-        auto *out_buf = reinterpret_cast<uint8_t *>(frame_buffer.data());
+        std::vector<f32> frame_buffer(nb_samples);
+        auto *out_buf = reinterpret_cast<u8 *>(frame_buffer.data());
 
-        auto const flushed_samples = swr_convert(swr_ctx, &out_buf, nb_samples, nullptr, 0);
-        if (flushed_samples > 0) {
+        if (auto const flushed_samples = swr_convert(swr_ctx, &out_buf, nb_samples, nullptr, 0); flushed_samples > 0) {
             pcm_data.insert(pcm_data.end(), frame_buffer.begin(), frame_buffer.begin() + flushed_samples);
         }
     }

@@ -1,10 +1,10 @@
 import grpc from '@grpc/grpc-js';
 import protoLoader from '@grpc/proto-loader';
-import { Readable } from 'stream';
 import { promisify } from 'util';
-import { env } from '$env/dynamic/private';
 
-const PROTO_PATH = `${env.PROTO_DIRECTORY}/transcriber.proto`;
+const TRANSCRIBER_URL = process.env.MEETING_SUM_TRANSCRIBER_URL ?? 'localhost:50051';
+const PROTO_DIRECTORY = '../proto';
+const PROTO_PATH = `${PROTO_DIRECTORY}/transcriber.proto`;
 
 // Load gRPC definitions
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
@@ -16,7 +16,7 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
 });
 
 const proto: any = grpc.loadPackageDefinition(packageDefinition);
-const client = new proto.Transcriber(env.TRANSCRIBER_URL, grpc.credentials.createInsecure());
+const client = new proto.Transcriber(TRANSCRIBER_URL, grpc.credentials.createInsecure());
 
 type TranscribeCallback = (message: string) => void;
 

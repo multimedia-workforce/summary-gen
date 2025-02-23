@@ -3,9 +3,8 @@
 
 # Custom entries
 /build
-/.idea
+.idea/
 /.cache
-/assets/ggml-base.bin
 
 ### C++ ###
 # Prerequisites

@@ -33,3 +33,14 @@ message(STATUS "AVCODEC library: ${AVCODEC_LIBRARIES}")
 message(STATUS "AVUTIL library: ${AVUTIL_LIBRARIES}")
 message(STATUS "SWSCALE library: ${SWSCALE_LIBRARIES}")
 message(STATUS "SWRESAMPLE library: ${SWRESAMPLE_LIBRARIES}")
+
+find_package(Protobuf REQUIRED)
+
+# Display paths
+message(STATUS "Protobuf found:")
+message(STATUS "  - Protoc: ${Protobuf_PROTOC_EXECUTABLE}")
+message(STATUS "  - Include Path: ${Protobuf_INCLUDE_DIRS}")
+message(STATUS "  - Libraries: ${Protobuf_LIBRARIES}")
+
+find_package(gRPC REQUIRED)
+message(STATUS "gRPC found.")

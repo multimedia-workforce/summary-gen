@@ -1,15 +1,8 @@
 # Protobuf cmake configuration
 
-find_package(Protobuf REQUIRED)
-
-# Display paths
-message(STATUS "Protobuf found:")
-message(STATUS "  - Protoc: ${Protobuf_PROTOC_EXECUTABLE}")
-message(STATUS "  - Include Path: ${Protobuf_INCLUDE_DIRS}")
-message(STATUS "  - Libraries: ${Protobuf_LIBRARIES}")
-
-find_package(gRPC REQUIRED)
-
+# Copy protobuf files from shared folder
+file(GLOB PROTO_SOURCES_ORIGINAL "${CMAKE_SOURCE_DIR}/../proto/*.proto")
+file(COPY ${PROTO_SOURCES_ORIGINAL} DESTINATION ${CMAKE_CURRENT_SOURCE_DIR})
 file(GLOB PROTO_SOURCES
         "${CMAKE_CURRENT_SOURCE_DIR}/*.proto"
 )

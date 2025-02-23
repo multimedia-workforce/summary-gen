@@ -21,24 +21,33 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-cmake_minimum_required(VERSION 3.22)
+# Project source files
+file(GLOB PROJECT_SOURCES
+        "${CMAKE_CURRENT_SOURCE_DIR}/*.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
+)
 
-# Set the project name and language
-project(meeting-summary LANGUAGES C CXX)
+# Executable definition with the project sources
+add_executable("${PROJECT_NAME}"
+        "${PROJECT_SOURCES}"
+)
 
-# Set the C and C++ standard
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+target_link_libraries("${PROJECT_NAME}" PRIVATE whisper spdlog::spdlog)
 
-# Add source subproject
-include(dependencies.cmake)
-add_subdirectory(source)
-add_subdirectory(proto)
+# Include directories for ffmpeg libraries
+target_include_directories("${PROJECT_NAME}" PRIVATE
+        ${AVFORMAT_INCLUDE_DIRS}
+        ${AVCODEC_INCLUDE_DIRS}
+        ${AVUTIL_INCLUDE_DIRS}
+        ${SWSCALE_INCLUDE_DIRS}
+        ${SWRESAMPLE_INCLUDE_DIRS}
+)
 
-# Compile commands for clangd
-if (EXISTS "${CMAKE_INSTALL_PREFIX}/compile_commands.json")
-    file(CREATE_LINK "${CMAKE_INSTALL_PREFIX}/compile_commands.json" "${CMAKE_CURRENT_SOURCE_DIR}/compile_commands.json")
-endif ()
+# Link ffmpeg libraries
+target_link_libraries("${PROJECT_NAME}" PRIVATE
+        ${AVFORMAT_LIBRARIES}
+        ${AVCODEC_LIBRARIES}
+        ${AVUTIL_LIBRARIES}
+        ${SWSCALE_LIBRARIES}
+        ${SWRESAMPLE_LIBRARIES}
+)
