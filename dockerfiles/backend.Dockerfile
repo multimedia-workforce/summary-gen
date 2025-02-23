@@ -22,6 +22,10 @@ WORKDIR /app
 COPY ./backend .
 COPY ./proto ../proto
 
+# Download tiny model if it isn't already present
+RUN mkdir -p ./models && \
+    [ -f ./models/ggml-tiny.bin ] || wget -P ./models https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin
+
 # Create a build directory and build the project
 RUN cmake --preset=lin-64-release
 RUN cmake --build --preset=lin-64-release
