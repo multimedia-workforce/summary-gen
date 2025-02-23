@@ -16,7 +16,7 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
 });
 
 const proto: any = grpc.loadPackageDefinition(packageDefinition);
-const client = new proto.Transcriber('localhost:50051', grpc.credentials.createInsecure());
+const client = new proto.Transcriber(env.TRANSCRIBER_URL, grpc.credentials.createInsecure());
 
 type TranscribeCallback = (message: string) => void;
 
@@ -40,7 +40,6 @@ export async function transcribe(videoBuffer: Buffer, callback: TranscribeCallba
     }
     
     call.end(); // Signal end of transmission
-    
     call.on('data', (transcription: any) => {
         callback(transcription.text);
     });

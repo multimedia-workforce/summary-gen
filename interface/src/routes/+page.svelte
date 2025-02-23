@@ -1,6 +1,8 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import type { PageData } from "./$types";
 
+    const { data }: { data: PageData } = $props();
     let transcript = $state("");
     let isServerOnline = $state(false);
     let serverStatusColor = $derived(
@@ -53,7 +55,7 @@
 
     onMount(() => {
         checkHeartbeat();
-        setInterval(checkHeartbeat, 5000);
+        setInterval(checkHeartbeat, data.heartbeatInterval);
     });
 </script>
 

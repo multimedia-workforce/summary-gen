@@ -4,7 +4,7 @@ export async function POST({ request }) {
     const stream = new ReadableStream({
         start(controller) {
             const callback = (text: string) => {
-                controller.enqueue(`${text}\n`);
+                controller.enqueue(text);
             };
 
             request.arrayBuffer().then((buffer) => {
