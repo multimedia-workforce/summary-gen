@@ -1,4 +1,4 @@
-import { heartbeat } from "$lib/transcribe";
+import { heartbeat } from "$lib/grpc/transcribe";
 import { json } from "@sveltejs/kit";
 
 /**

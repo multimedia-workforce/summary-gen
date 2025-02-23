@@ -2,9 +2,8 @@ import grpc from '@grpc/grpc-js';
 import protoLoader from '@grpc/proto-loader';
 import { promisify } from 'util';
 
-const TRANSCRIBER_URL = process.env.MEETING_SUM_TRANSCRIBER_URL ?? 'localhost:50051';
-const PROTO_DIRECTORY = '../proto';
-const PROTO_PATH = `${PROTO_DIRECTORY}/transcriber.proto`;
+const TRANSCRIBER_URL = process.env.GRPC_LISTEN_ADDRESS ?? 'localhost:50051';
+const PROTO_PATH = '../proto/transcriber.proto';
 
 // Load gRPC definitions
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
@@ -16,7 +15,6 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
 });
 
 const proto: any = grpc.loadPackageDefinition(packageDefinition);
-const client = new proto.Transcriber(TRANSCRIBER_URL, grpc.credentials.createInsecure());
 
 type TranscribeCallback = (message: string) => void;
 
@@ -26,6 +24,7 @@ type TranscribeCallback = (message: string) => void;
  * @returns Promise
  */
 export async function transcribe(reader: ReadableStreamDefaultReader, callback: TranscribeCallback): Promise<void> {
+    const client = new proto.Transcriber(TRANSCRIBER_URL, grpc.credentials.createInsecure());
     return new Promise(async (resolve, reject) => {
         const call = client.transcribe();
 
@@ -69,6 +68,7 @@ export async function transcribe(reader: ReadableStreamDefaultReader, callback: 
  * @returns A boolean indicating server status
  */
 export async function heartbeat(): Promise<boolean> {
+    const client = new proto.Transcriber(TRANSCRIBER_URL, grpc.credentials.createInsecure());
     const heartbeatPromise = promisify(client.heartbeat).bind(client);
     try {
         await heartbeatPromise({});

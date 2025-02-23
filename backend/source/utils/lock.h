@@ -21,12 +21,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef RWLOCK_H
-#define RWLOCK_H
+#ifndef UTILS_LOCK_H
+#define UTILS_LOCK_H
 
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
+
+namespace utils {
 
 /// Implementation specific details
 namespace details {
@@ -137,4 +139,6 @@ public:
     }
 };
 
-#endif// RWLOCK_H
+}// namespace utils
+
+#endif// UTILS_LOCK_H

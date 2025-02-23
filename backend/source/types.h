@@ -25,9 +25,9 @@
 #define TYPES_H
 
 #include <cstdint>
-#include <expected>
-#include <filesystem>
 #include <string>
+
+#include <tl/expected.hpp>
 
 using u8 = std::uint8_t;
 using u16 = std::uint16_t;
@@ -45,8 +45,6 @@ using f32 = float;
 using f64 = double;
 
 template<typename T>
-using Result = std::expected<T, std::string>;
-namespace fs = std::filesystem;
-
+using Result = tl::expected<T, std::string>;
 
 #endif// TYPES_H

@@ -2,3 +2,5 @@
 download-ggml-model.sh
 backend/models
 samples/
+build/
+.cache/

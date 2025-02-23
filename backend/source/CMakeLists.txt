@@ -25,6 +25,8 @@
 file(GLOB PROJECT_SOURCES
         "${CMAKE_CURRENT_SOURCE_DIR}/*.h"
         "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/*.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/utils/*.cpp"
 )
 
 # Executable definition with the project sources
@@ -32,22 +34,23 @@ add_executable("${PROJECT_NAME}"
         "${PROJECT_SOURCES}"
 )
 
-target_link_libraries("${PROJECT_NAME}" PRIVATE whisper spdlog::spdlog)
+target_link_libraries("${PROJECT_NAME}" PRIVATE whisper spdlog::spdlog nlohmann_json tl::expected)
 
 # Include directories for ffmpeg libraries
 target_include_directories("${PROJECT_NAME}" PRIVATE
-        ${AVFORMAT_INCLUDE_DIRS}
-        ${AVCODEC_INCLUDE_DIRS}
-        ${AVUTIL_INCLUDE_DIRS}
-        ${SWSCALE_INCLUDE_DIRS}
-        ${SWRESAMPLE_INCLUDE_DIRS}
+        "${AVFORMAT_INCLUDE_DIRS}"
+        "${AVCODEC_INCLUDE_DIRS}"
+        "${AVUTIL_INCLUDE_DIRS}"
+        "${SWSCALE_INCLUDE_DIRS}"
+        "${SWRESAMPLE_INCLUDE_DIRS}"
+        "${PROJECT_SOURCE_DIR}/extern"
 )
 
 # Link ffmpeg libraries
 target_link_libraries("${PROJECT_NAME}" PRIVATE
-        ${AVFORMAT_LIBRARIES}
-        ${AVCODEC_LIBRARIES}
-        ${AVUTIL_LIBRARIES}
-        ${SWSCALE_LIBRARIES}
-        ${SWRESAMPLE_LIBRARIES}
+        "${AVFORMAT_LIBRARIES}"
+        "${AVCODEC_LIBRARIES}"
+        "${AVUTIL_LIBRARIES}"
+        "${SWSCALE_LIBRARIES}"
+        "${SWRESAMPLE_LIBRARIES}"
 )

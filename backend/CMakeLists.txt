@@ -24,12 +24,12 @@
 cmake_minimum_required(VERSION 3.22)
 
 # Set the project name and language
-project(transcriber LANGUAGES C CXX)
+project(meeting-summary-backend LANGUAGES C CXX)
 
 # Set the C and C++ standard
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 

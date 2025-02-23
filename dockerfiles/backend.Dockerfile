@@ -31,4 +31,4 @@ RUN cmake --preset=lin-64-release
 RUN cmake --build --preset=lin-64-release
 
 # Run service
-CMD ["./build/lin-64-release/transcriber", "./models/ggml-tiny.bin", "50051"]
+CMD ["./build/lin-64-release/meeting-summary-backend", "./models/ggml-tiny.bin", "50051"]

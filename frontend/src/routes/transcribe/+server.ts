@@ -1,4 +1,17 @@
-import { transcribe } from '$lib/transcribe';
+import { transcribe } from '$lib/grpc/transcribe';
+
+const ETranscribeStatus = {
+    PROCESSING: "processing",
+    CHUNK: "chunk",
+    COMPLETED: "completed",
+    ERROR: "error"
+} as const;
+
+export type TranscribeStatus = typeof ETranscribeStatus[keyof typeof ETranscribeStatus];
+export type TranscribeResponse = {
+    status: TranscribeStatus;
+    result?: string;
+}
 
 export async function POST({ request }) {
     const formData = await request.formData();
@@ -11,15 +24,29 @@ export async function POST({ request }) {
     const reader = file.stream().getReader();
     const stream = new ReadableStream({
         async start(controller) {
-            const callback = (text: string) => {
-                controller.enqueue(text);
-            };
+            const encoder = new TextEncoder();
 
             try {
-                await transcribe(reader, callback);
-            } catch (error) {
-                controller.error(error);
-            } finally {
+                // Send initial processing message
+                const processingMessage: TranscribeResponse = { status: ETranscribeStatus.PROCESSING };
+                controller.enqueue(encoder.encode(JSON.stringify(processingMessage) + "\n"));
+
+                await transcribe(reader, (text: string) => {
+                    const chunk: TranscribeResponse = { status: ETranscribeStatus.CHUNK, result: text };
+                    controller.enqueue(encoder.encode(JSON.stringify(chunk) + "\n"));
+                });
+
+                // Send the final result
+                const completedMessage: TranscribeResponse = { status: ETranscribeStatus.COMPLETED };
+                controller.enqueue(encoder.encode(JSON.stringify(completedMessage) + "\n"));
+                controller.close();
+            } catch(error) {
+                const errorMessage: TranscribeResponse = {
+                    status: ETranscribeStatus.ERROR,
+                    result: error instanceof Error ? error.message : String(error)
+                };
+
+                controller.enqueue(encoder.encode(JSON.stringify(errorMessage) + "\n"));
                 controller.close();
             }
         }
@@ -27,20 +54,9 @@ export async function POST({ request }) {
 
     return new Response(stream, {
         headers: {
-            'Content-Type': 'text/plain',
+            'Content-Type': 'application/json',
             'Transfer-Encoding': 'chunked',
             'Connection': 'keep-alive'
-        }
-    });
-}
-
-// Handle CORS preflight
-export async function OPTIONS() {
-    return new Response(null, {
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type'
         }
     });
 }
