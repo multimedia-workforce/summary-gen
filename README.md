@@ -53,8 +53,8 @@ Note that this must not be done when the project is started via docker compose.
 ### Installation
 Clone the repository and navigate to the project directory:
 ```bash
-git clone https://github.com/yourusername/automatic-meeting-summarizer.git
-cd automatic-meeting-summarizer
+git clone https://github.com/elias-plank/meeting-summary.git
+cd meeting-summary
 ```
 
 #### Running the Backend
@@ -64,6 +64,8 @@ cmake --preset=<os>-64-release
 cmake --preset=<os>-64-release --build
 ./build/<os>-64-release/meeting-summary models/ggml-tiny.bin 50051
 ```
+
+The backend will now listen for grpc messages at `localhost:50051`
 
 #### Setting Up the Frontend
 ```bash
