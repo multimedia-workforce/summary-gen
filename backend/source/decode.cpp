@@ -24,7 +24,6 @@
 #include "decode.h"
 
 #include <cstring>
-#include <iostream>
 #include <vector>
 
 extern "C" {
@@ -67,13 +66,13 @@ Result<std::vector<f32>> decode_pcm32(std::vector<u8> const &buffer) {
     // Open input file
     auto *fmt_ctx = avformat_alloc_context();
     if (!fmt_ctx) {
-        return std::unexpected("Could not allocate format context.");
+        return tl::unexpected("Could not allocate format context.");
     }
 
     const auto avio_buffer = static_cast<u8 *>(av_malloc(AVIO_BUFFER_SIZE));
     if (!avio_buffer) {
         avformat_close_input(&fmt_ctx);
-        return std::unexpected("Could not allocate AVIO buffer.");
+        return tl::unexpected("Could not allocate AVIO buffer.");
     }
 
     // Create custom AVIOContext
@@ -83,20 +82,20 @@ Result<std::vector<f32>> decode_pcm32(std::vector<u8> const &buffer) {
     if (!avio_ctx) {
         av_free(avio_buffer);
         avformat_close_input(&fmt_ctx);
-        return std::unexpected("Could not allocate AVIOContext.");
+        return tl::unexpected("Could not allocate AVIOContext.");
     }
     fmt_ctx->pb = avio_ctx;
 
     if (avformat_open_input(&fmt_ctx, nullptr, nullptr, nullptr) < 0) {
         avio_context_free(&avio_ctx);
         avformat_free_context(fmt_ctx);
-        return std::unexpected("Could not open input from buffer.");
+        return tl::unexpected("Could not open input from buffer.");
     }
 
     if (avformat_find_stream_info(fmt_ctx, nullptr) < 0) {
         avformat_close_input(&fmt_ctx);
         avio_context_free(&avio_ctx);
-        return std::unexpected("Could not retrieve stream info.");
+        return tl::unexpected("Could not retrieve stream info.");
     }
 
     // Locate the best audio stream
@@ -104,7 +103,7 @@ Result<std::vector<f32>> decode_pcm32(std::vector<u8> const &buffer) {
     if (audio_stream_index < 0) {
         avformat_close_input(&fmt_ctx);
         avio_context_free(&avio_ctx);
-        return std::unexpected("No audio stream found.");
+        return tl::unexpected("No audio stream found.");
     }
     auto const *audio_stream = fmt_ctx->streams[audio_stream_index];
 
@@ -113,28 +112,28 @@ Result<std::vector<f32>> decode_pcm32(std::vector<u8> const &buffer) {
     if (!codec) {
         avformat_close_input(&fmt_ctx);
         avio_context_free(&avio_ctx);
-        return std::unexpected("No suitable decoder found.");
+        return tl::unexpected("No suitable decoder found.");
     }
 
     auto *codec_ctx = avcodec_alloc_context3(codec);
     if (!codec_ctx) {
         avformat_close_input(&fmt_ctx);
         avio_context_free(&avio_ctx);
-        return std::unexpected("Could not allocate codec context.");
+        return tl::unexpected("Could not allocate codec context.");
     }
 
     if (avcodec_parameters_to_context(codec_ctx, audio_stream->codecpar) < 0) {
         avcodec_free_context(&codec_ctx);
         avformat_close_input(&fmt_ctx);
         avio_context_free(&avio_ctx);
-        return std::unexpected("Could not copy codec parameters.");
+        return tl::unexpected("Could not copy codec parameters.");
     }
 
     if (avcodec_open2(codec_ctx, codec, nullptr) < 0) {
         avcodec_free_context(&codec_ctx);
         avformat_close_input(&fmt_ctx);
         avio_context_free(&avio_ctx);
-        return std::unexpected("Could not open codec.");
+        return tl::unexpected("Could not open codec.");
     }
 
     // Set up resampling to PCM float 32-bit, mono, 16kHz
@@ -143,7 +142,7 @@ Result<std::vector<f32>> decode_pcm32(std::vector<u8> const &buffer) {
         avcodec_free_context(&codec_ctx);
         avformat_close_input(&fmt_ctx);
         avio_context_free(&avio_ctx);
-        return std::unexpected("Could not allocate SwrContext.");
+        return tl::unexpected("Could not allocate SwrContext.");
     }
 
     constexpr AVChannelLayout out_layout = AV_CHANNEL_LAYOUT_MONO;// Ensure mono output
@@ -153,7 +152,7 @@ Result<std::vector<f32>> decode_pcm32(std::vector<u8> const &buffer) {
         avcodec_free_context(&codec_ctx);
         avformat_close_input(&fmt_ctx);
         avio_context_free(&avio_ctx);
-        return std::unexpected("Could not set SwrContext options.");
+        return tl::unexpected("Could not set SwrContext options.");
     }
 
     if (swr_init(swr_ctx) < 0) {
@@ -161,7 +160,7 @@ Result<std::vector<f32>> decode_pcm32(std::vector<u8> const &buffer) {
         avcodec_free_context(&codec_ctx);
         avformat_close_input(&fmt_ctx);
         avio_context_free(&avio_ctx);
-        return std::unexpected("Could not initialize SwrContext.");
+        return tl::unexpected("Could not initialize SwrContext.");
     }
 
     // Allocate necessary structures
@@ -174,7 +173,7 @@ Result<std::vector<f32>> decode_pcm32(std::vector<u8> const &buffer) {
         avcodec_free_context(&codec_ctx);
         avformat_close_input(&fmt_ctx);
         avio_context_free(&avio_ctx);
-        return std::unexpected("Could not allocate AVPacket or AVFrame.");
+        return tl::unexpected("Could not allocate AVPacket or AVFrame.");
     }
 
     std::vector<f32> pcm_data;

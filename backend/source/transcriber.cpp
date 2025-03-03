@@ -21,21 +21,19 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-#include <fstream>
-
 #include <spdlog/spdlog.h>
 
-#include "transcriber.h"
 #include "decode.h"
+#include "transcriber.h"
 
-TranscriberService::TranscriberService(fs::path const &model_path) : m_context{ nullptr } {
+TranscriberService::TranscriberService(std::filesystem::path const &model_path) : m_context{ nullptr } {
     auto *context = whisper_init_from_file_with_params(model_path.string().c_str(), whisper_context_default_params());
     if (!context) {
         spdlog::error("Failed to initialize whisper context, shutting down.");
         std::exit(1);
     }
 
-    m_context = std::make_unique<ReadWriteLock<WhisperContext>>(context, whisper_free);
+    m_context = std::make_unique<utils::ReadWriteLock<WhisperContext>>(context, whisper_free);
 }
 
 grpc::Status TranscriberService::transcribe(grpc::ServerContext *context,
@@ -45,7 +43,7 @@ grpc::Status TranscriberService::transcribe(grpc::ServerContext *context,
     Chunk chunk;
     std::ostringstream data_stream;
     while (stream->Read(&chunk)) {
-        auto const& data = chunk.data();
+        auto const &data = chunk.data();
         data_stream.write(data.data(), static_cast<std::streamsize>(data.size()));
     }
 
@@ -85,6 +83,6 @@ grpc::Status TranscriberService::transcribe(grpc::ServerContext *context,
 grpc::Status TranscriberService::heartbeat(grpc::ServerContext *context,
                                            google::protobuf::Empty const *,
                                            google::protobuf::Empty *) {
-    spdlog::info("Incoming heartbeat, respond with OK");
+    spdlog::info("Incoming transcriber heartbeat, respond with OK");
     return grpc::Status::OK;
 }

@@ -12,6 +12,18 @@ CPMAddPackage(
         VERSION 1.12.0
 )
 
+CPMAddPackage(
+        NAME tlexpected
+        GITHUB_REPOSITORY TartanLlama/expected
+        VERSION 1.1.0
+)
+
+CPMAddPackage(
+        NAME nlohmann_json
+        GITHUB_REPOSITORY nlohmann/json
+        VERSION 3.11.3
+)
+
 find_package(PkgConfig REQUIRED)
 
 # Find the FFmpeg libraries via pkg-config

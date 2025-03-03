@@ -1,20 +1,38 @@
 # Meeting Summary
 
-This project is an automatic meeting summarization tool that transcribes and summarizes video/audio recordings using [whisper.cpp](https://github.com/ggerganov/whisper.cpp). It processes media files using `ffmpeg`, transcribes them with `whisper`, and provides a gRPC-based API. The frontend interface is built using SvelteKit.
+This project is an automatic meeting summarization tool that transcribes and summarizes video/audio recordings using [whisper.cpp](https://github.com/ggerganov/whisper.cpp). The summary generation can be performed by an arbitrary OpenAI instance (e.g. self-hosted). It processes media files using `ffmpeg`, transcribes them with `whisper`, and summarizes them with the configured OpenAI instance. The frontend interface is built using SvelteKit and communicates with the backend via `gRPC`.
 
 ## Features
 - [x] Transcribe audio and video files into text
-- [ ] (To Be Implemented) Generate meeting summaries from transcripts
+- [x] Generate meeting summaries from transcripts
 - [x] gRPC-based communication between the backend and frontend
 - [x] SvelteKit-based web interface for user interaction
 
-Here is a preview of the current working state, which only performs transcription:
-![image](https://github.com/user-attachments/assets/5671518b-7bf9-42cd-9328-a8969485b826)
+Here is a preview of the current working state:
 
+![preview](docs/frontend.png)
 
 ## Installation
 
-The recommended approach is running the meeting summary tool as a docker compose project. You just need to execute the following command in the root directory of the repository:
+The recommended approach is running the meeting summary tool as a docker compose project. When using the docker compose project, the only thing that needs to be configured is the OpenAI instance that will be used for the summary generation. This can be configured inside the [compose.yaml](./compose.yaml) by altering the `backend` service:
+
+```yaml
+services:
+  backend:
+    ...
+    environment:
+      - OPENAI_ENDPOINT=http://host.docker.internal:11434
+      - OPENAI_TOKEN=""
+```
+
+As specified above, the default endpoint is `host.docker.internal:11434`, which just points to the host that runs docker. This configuration works with OpenAI instances that are self-hosted (e.g. via [Ollama](https://ollama.com/)) on the host machine. Alternatives to that are:
+
+ -  Using the official [OpenAI](https://api.openai.com/) or the [DeepSeek](https://api.deepseek.com) API. **Note that this will probably result in costs for you, as these official APIs charge a price per query/tokens**.
+ - Using a self-hosted OpenAI instance that runs somewhere else. In this case you just need to set the `OPENAI_ENDPOINT` variable to the host that runs your instance.
+
+The only important thing here is that the OpenAI endpoint hosts an API that conforms to the [OpenAI API reference](https://platform.openai.com/docs/api-reference/introduction).
+
+Once that is configured, you just need to execute the following command in the root directory of the repository:
 
 ```sh
 docker compose up -d
@@ -23,10 +41,12 @@ docker compose up -d
 This automatically downloads all required dependencies and starts the backend and frontend. The frontend is then reachable at http://localhost:8080
 
 ## Usage
+
 1. Upload an audio or video file via the web interface.
 2. The backend processes the media file using `ffmpeg`.
 3. `whisper.cpp` transcribes the audio.
 4. The transcription is streamed to the web interface.
+5. Start a summary for the current transcription.
 
 ## Development Prerequisites
 Ensure you have the following dependencies installed before building and running the project:

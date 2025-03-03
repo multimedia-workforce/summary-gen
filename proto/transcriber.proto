@@ -1,4 +1,4 @@
-// ./proto/decode.proto
+// ./proto/transcriber.proto
 // protobuffer framework will generate the classes which we'll access later
 
 syntax = "proto3";

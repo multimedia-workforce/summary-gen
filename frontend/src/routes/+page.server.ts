@@ -1,8 +1,9 @@
 import type { PageServerLoad } from "./$types";
 
-const HEARTBEAT_INTERVAL = Number(process.env.MEETING_SUM_HEARTBEAT_INTERVAL ?? 5000);
+const HEARTBEAT_INTERVAL = Number(process.env.GRPC_HEARTBEAT_INTERVAL ?? 10000);
+
 export const load: PageServerLoad = async ({ params }) => {
     return {
-        heartbeatInterval: HEARTBEAT_INTERVAL
+        heartbeatInterval: HEARTBEAT_INTERVAL,
     };
 };

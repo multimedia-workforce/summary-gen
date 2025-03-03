@@ -21,46 +21,54 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-#ifndef TRANSCRIBER_H
-#define TRANSCRIBER_H
+#ifndef SUMMARIZER_H
+#define SUMMARIZER_H
 
-#include "utils/lock.h"
+#include "openai.h"
 
-#include <filesystem>
-#include <memory>
-
-#include <transcriber.grpc.pb.h>
+#include <summarizer.grpc.pb.h>
 #include <whisper.h>
 
-struct TranscriberService final : Transcriber::Service {
+struct SummarizerService final : Summarizer::Service {
     /**
-     * Instantiates a new transcriber service
-     * @param model_path The path to the whisper model
+     * Instantiates a new summarizer gRPC service
+     * @param endpoint The OpenAI endpoint
+     * @param token The JWT token for authentication at the endpoint
      */
-    explicit TranscriberService(std::filesystem::path const &model_path);
+    SummarizerService(std::string endpoint, std::string token);
 
     /**
-     * Transcribes a given video
+     * Summarizes a given text
      * @param context The server context
-     * @param stream Used for accessing the data
+     * @param request The summarize request
+     * @param response The response writer
      * @return A grpc status
      */
-    grpc::Status transcribe(grpc::ServerContext *context, grpc::ServerReaderWriter<Transcript, Chunk> *stream) override;
+    grpc::Status summarize(grpc::ServerContext *context, Prompt const *request, Summary *response) override;
 
     /**
-     * Endpoint for checking whether the transcriber service is running
+     * Retrieves a list of the available OpenAI models
+     * @param context The server context
+     * @param request The request, which is empty
+     * @param response The response, which contains a list of models
+     */
+    grpc::Status models(grpc::ServerContext *context,
+                        google::protobuf::Empty const *request,
+                        Models *response) override;
+
+    /**
+     * Endpoint for checking whether the summarizer service is running
      * @param context The server context
      * @param request The heartbeat request, which is empty
      * @param response The response, which is empty
      * @return A grpc status
      */
     grpc::Status heartbeat(grpc::ServerContext *context,
-                           const google::protobuf::Empty *request,
+                           google::protobuf::Empty const *request,
                            google::protobuf::Empty *response) override;
 
 private:
-    using WhisperContext = std::unique_ptr<whisper_context, decltype((whisper_free))>;
-    std::unique_ptr<utils::ReadWriteLock<WhisperContext>> m_context;
+    OpenAI m_client;
 };
 
-#endif// TRANSCRIBER_H
+#endif// SUMMARIZER_H
