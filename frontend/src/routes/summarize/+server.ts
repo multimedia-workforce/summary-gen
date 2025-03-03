@@ -1,5 +1,4 @@
 import { summarize, type SummarizePrompt } from '$lib/grpc/summarize';
-import { type RequestHandler } from '@sveltejs/kit';
 
 const ESummarizeStatus = {
     PROCESSING: "processing",
@@ -18,19 +17,17 @@ export async function POST({ request }) {
 
     const stream = new ReadableStream({
         async start(controller) {
-            const encoder = new TextEncoder();
-
             try {
                 // Send initial processing message
                 const processingMessage: SummarizeResponse = { status: ESummarizeStatus.PROCESSING };
-                controller.enqueue(encoder.encode(JSON.stringify(processingMessage) + "\n"));
+                controller.enqueue(btoa(JSON.stringify(processingMessage)) + '\n');
 
                 // Perform the long-running gRPC call
                 const result = await summarize(summarizeRequest);
 
                 // Send the final result
                 const completedMessage: SummarizeResponse = { status: ESummarizeStatus.COMPLETED, result };
-                controller.enqueue(encoder.encode(JSON.stringify(completedMessage) + "\n"));
+                controller.enqueue(btoa(JSON.stringify(completedMessage)) + '\n');
                 controller.close();
             } catch (error) {
                 const errorMessage: SummarizeResponse = {
@@ -38,7 +35,7 @@ export async function POST({ request }) {
                     result: error instanceof Error ? error.message : String(error)
                 };
 
-                controller.enqueue(encoder.encode(JSON.stringify(errorMessage) + "\n"));
+                controller.enqueue(btoa(JSON.stringify(errorMessage)) + '\n');
                 controller.close();
             }
         }

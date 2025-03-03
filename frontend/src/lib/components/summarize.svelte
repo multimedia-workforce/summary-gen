@@ -3,7 +3,7 @@
     import type {
         SummarizeResponse,
         SummarizeStatus,
-    } from "../routes/summarize/+server";
+    } from "../../routes/summarize/+server";
     import { Jumper } from "svelte-loading-spinners";
 
     type Props = {
@@ -62,6 +62,16 @@
                 headers: { "Content-Type": "application/json" },
             });
 
+            if (!response.ok) {
+                console.error(
+                    "HTTP Error:",
+                    response.status,
+                    response.statusText,
+                );
+                summary = `Error: Server responded with ${response.status}`;
+                return;
+            }
+
             if (!response.body) return;
 
             const reader = response.body.getReader();
@@ -71,12 +81,12 @@
                 const { done, value } = await reader.read();
                 if (done) break;
 
-                const chunk = decoder.decode(value).trim();
-                if (!chunk) continue;
+                const decoded = decoder.decode(value).trim();
+                if (!decoded) continue;
 
-                for (const line of chunk.split("\n")) {
+                for (const chunk of decoded.split("\n")) {
                     try {
-                        const data: SummarizeResponse = JSON.parse(line);
+                        const data: SummarizeResponse = JSON.parse(atob(chunk));
                         summarizeStatus = data.status;
 
                         switch (data.status) {

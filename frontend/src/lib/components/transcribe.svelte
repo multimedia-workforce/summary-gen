@@ -4,7 +4,7 @@
     import type {
         TranscribeResponse,
         TranscribeStatus,
-    } from "../routes/transcribe/+server";
+    } from "../../routes/transcribe/+server";
 
     type Props = {
         file: File | null;
@@ -60,12 +60,14 @@
                 const { done, value } = await reader.read();
                 if (done) break;
 
-                const chunk = decoder.decode(value).trim();
-                if (!chunk) continue;
+                const decoded = decoder.decode(value).trim();
+                if (!decoded) continue;
 
-                for (const line of chunk.split("\n")) {
+                for (const chunk of decoded.split("\n")) {
                     try {
-                        const data: TranscribeResponse = JSON.parse(line);
+                        const data: TranscribeResponse = JSON.parse(
+                            atob(chunk),
+                        );
                         transcribeStatus = data.status;
 
                         switch (data.status) {
@@ -76,10 +78,7 @@
                                 transcript += data.result as string;
                                 break;
                             case "completed":
-                                console.log(
-                                    "Transcribe finished",
-                                    data.result as string,
-                                );
+                                console.log("Transcribe finished");
                                 return; // Stop reading after final result
                             case "error":
                                 console.error("Error:", data.result);

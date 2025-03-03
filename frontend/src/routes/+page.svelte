@@ -1,8 +1,8 @@
 <script lang="ts">
     import type { PageData } from "./$types";
-    import Transcribe from "$lib/transcribe.svelte";
-    import Summarize from "$lib/summarize.svelte";
-    import Banner from "$lib/banner.svelte";
+    import Transcribe from "$lib/components/transcribe.svelte";
+    import Summarize from "$lib/components/summarize.svelte";
+    import Banner from "$lib/components/banner.svelte";
 
     const { data }: { data: PageData } = $props();
     let file: File | null = $state(null);

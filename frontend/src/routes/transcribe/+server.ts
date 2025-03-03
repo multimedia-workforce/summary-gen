@@ -24,21 +24,19 @@ export async function POST({ request }) {
     const reader = file.stream().getReader();
     const stream = new ReadableStream({
         async start(controller) {
-            const encoder = new TextEncoder();
-
             try {
                 // Send initial processing message
                 const processingMessage: TranscribeResponse = { status: ETranscribeStatus.PROCESSING };
-                controller.enqueue(encoder.encode(JSON.stringify(processingMessage) + "\n"));
+                controller.enqueue(btoa(JSON.stringify(processingMessage)) + '\n');
 
                 await transcribe(reader, (text: string) => {
                     const chunk: TranscribeResponse = { status: ETranscribeStatus.CHUNK, result: text };
-                    controller.enqueue(encoder.encode(JSON.stringify(chunk) + "\n"));
+                    controller.enqueue(btoa(JSON.stringify(chunk)) + '\n');
                 });
 
                 // Send the final result
                 const completedMessage: TranscribeResponse = { status: ETranscribeStatus.COMPLETED };
-                controller.enqueue(encoder.encode(JSON.stringify(completedMessage) + "\n"));
+                controller.enqueue(btoa(JSON.stringify(completedMessage)) + '\n');
                 controller.close();
             } catch(error) {
                 const errorMessage: TranscribeResponse = {
@@ -46,7 +44,7 @@ export async function POST({ request }) {
                     result: error instanceof Error ? error.message : String(error)
                 };
 
-                controller.enqueue(encoder.encode(JSON.stringify(errorMessage) + "\n"));
+                controller.enqueue(btoa(JSON.stringify(errorMessage)) + '\n');
                 controller.close();
             }
         }
