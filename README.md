@@ -10,7 +10,7 @@ This project is an automatic summarization tool that transcribes and summarizes 
 
 Here is a preview of the current working state:
 
-![preview](docs/frontend.png)
+![preview](docs/preview.png)
 
 ## Installation
 
