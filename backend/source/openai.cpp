@@ -67,7 +67,7 @@ Result<std::string> OpenAI::completion(CompletionRequest const &request) {
     spdlog::debug("Performing completion request: {}", nlohmann::json(request).dump());
 
     auto const response = authorized_post<CompletionRequest, CompletionResponse>("chat/completions", request);
-    if (!response) {
+    if (not response) {
         return tl::unexpected(response.error());
     }
     if (response->choices.empty()) {
@@ -79,7 +79,7 @@ Result<std::string> OpenAI::completion(CompletionRequest const &request) {
 
 Result<std::vector<std::string>> OpenAI::models() {
     auto const response = authorized_get<ModelsResponse>("models");
-    if (!response) {
+    if (not response) {
         return tl::unexpected(response.error());
     }
     return std::views::transform(response->data, [](auto &&e) { return e.id; }) |

@@ -52,7 +52,7 @@ grpc::Status SummarizerService::summarize(grpc::ServerContext *context, Prompt c
                                     Message::user(std::format("{}: {}", request->prompt(), request->transcript())) };
 
     auto const result = m_client.completion(completion_request);
-    if (!result) {
+    if (not result) {
         spdlog::error("Failed to summarize: {}", result.error());
         return grpc::Status{ grpc::StatusCode::UNAVAILABLE, result.error() };
     }
@@ -67,7 +67,7 @@ grpc::Status SummarizerService::models(grpc::ServerContext *context,
                                        Models *response) {
     spdlog::info("Incoming models request");
     auto const result = m_client.models();
-    if (!result) {
+    if (not result) {
         spdlog::error("Failed to retrieve models: {}", result.error());
         return grpc::Status{ grpc::StatusCode::UNAVAILABLE, result.error() };
     }

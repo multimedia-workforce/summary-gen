@@ -28,7 +28,7 @@
 
 TranscriberService::TranscriberService(std::filesystem::path const &model_path) : m_context{ nullptr } {
     auto *context = whisper_init_from_file_with_params(model_path.string().c_str(), whisper_context_default_params());
-    if (!context) {
+    if (not context) {
         spdlog::error("Failed to initialize whisper context, shutting down.");
         std::exit(1);
     }
@@ -64,7 +64,7 @@ grpc::Status TranscriberService::transcribe(grpc::ServerContext *context,
 
     auto input_video = data_stream.str();
     auto const decoded = decode_pcm32({ input_video.begin(), input_video.end() });
-    if (!decoded) {
+    if (not decoded) {
         spdlog::error("Failed to decode pcm32 from input: {}", decoded.error());
         auto const message = std::format("Failed to decode PCM32: {}", decoded.error());
         return grpc::Status{ grpc::StatusCode::UNAVAILABLE, message };

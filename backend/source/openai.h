@@ -87,7 +87,7 @@ private:
         headers.emplace("Authorization", std::format("Bearer {}", token));
 
         auto const result = m_client.Get(std::format("{}/v1/{}", endpoint, path), headers);
-        if (!result) {
+        if (not result) {
             return utils::unexpected_format("Failed to perform GET request: {}", to_string(result.error()));
         }
         if (result->status != httplib::StatusCode::OK_200) {
@@ -114,7 +114,7 @@ private:
             auto const result =
                     m_client.Post(std::format("{}/v1/{}", endpoint, path), headers, body.dump(), "application/json");
 
-            if (!result) {
+            if (not result) {
                 return tl::unexpected(std::format("Failed to perform POST request: {}", to_string(result.error())));
             }
             if (result->status != httplib::StatusCode::OK_200) {

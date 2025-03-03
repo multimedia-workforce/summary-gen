@@ -76,7 +76,7 @@ public:
     /// Read-write access to the value
     /// @return A pointer to the value
     [[nodiscard]] auto operator->()
-        requires(not std::is_const_v<Type> && details::UniqueLock<LockType>)
+        requires(not std::is_const_v<Type> and details::UniqueLock<LockType>)
     {
         return value;
     }
@@ -90,7 +90,7 @@ public:
     /// Read-write access to the value
     /// @return A reference to the value
     [[nodiscard]] auto &operator*()
-        requires(not std::is_const_v<Type> && details::UniqueLock<LockType>)
+        requires(not std::is_const_v<Type> and details::UniqueLock<LockType>)
     {
         return *value;
     }

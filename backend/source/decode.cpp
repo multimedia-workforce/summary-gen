@@ -65,12 +65,12 @@ int av_context_read_packet(void *opaque, u8 *buf, int const buf_size) {
 Result<std::vector<f32>> decode_pcm32(std::vector<u8> const &buffer) {
     // Open input file
     auto *fmt_ctx = avformat_alloc_context();
-    if (!fmt_ctx) {
+    if (not fmt_ctx) {
         return tl::unexpected("Could not allocate format context.");
     }
 
     const auto avio_buffer = static_cast<u8 *>(av_malloc(AVIO_BUFFER_SIZE));
-    if (!avio_buffer) {
+    if (not avio_buffer) {
         avformat_close_input(&fmt_ctx);
         return tl::unexpected("Could not allocate AVIO buffer.");
     }
@@ -79,7 +79,7 @@ Result<std::vector<f32>> decode_pcm32(std::vector<u8> const &buffer) {
     ReadBuffer read_buffer{ &buffer, 0 };
     auto *avio_ctx = avio_alloc_context(avio_buffer, AVIO_BUFFER_SIZE, 0, &read_buffer, av_context_read_packet, nullptr,
                                         nullptr);
-    if (!avio_ctx) {
+    if (not avio_ctx) {
         av_free(avio_buffer);
         avformat_close_input(&fmt_ctx);
         return tl::unexpected("Could not allocate AVIOContext.");
@@ -109,14 +109,14 @@ Result<std::vector<f32>> decode_pcm32(std::vector<u8> const &buffer) {
 
     // Find the decoder
     auto const *codec = avcodec_find_decoder(audio_stream->codecpar->codec_id);
-    if (!codec) {
+    if (not codec) {
         avformat_close_input(&fmt_ctx);
         avio_context_free(&avio_ctx);
         return tl::unexpected("No suitable decoder found.");
     }
 
     auto *codec_ctx = avcodec_alloc_context3(codec);
-    if (!codec_ctx) {
+    if (not codec_ctx) {
         avformat_close_input(&fmt_ctx);
         avio_context_free(&avio_ctx);
         return tl::unexpected("Could not allocate codec context.");
@@ -138,7 +138,7 @@ Result<std::vector<f32>> decode_pcm32(std::vector<u8> const &buffer) {
 
     // Set up resampling to PCM float 32-bit, mono, 16kHz
     auto *swr_ctx = swr_alloc();
-    if (!swr_ctx) {
+    if (not swr_ctx) {
         avcodec_free_context(&codec_ctx);
         avformat_close_input(&fmt_ctx);
         avio_context_free(&avio_ctx);
@@ -166,7 +166,7 @@ Result<std::vector<f32>> decode_pcm32(std::vector<u8> const &buffer) {
     // Allocate necessary structures
     auto *packet = av_packet_alloc();
     auto *frame = av_frame_alloc();
-    if (!packet || !frame) {
+    if (not packet or not frame) {
         av_packet_free(&packet);
         av_frame_free(&frame);
         swr_free(&swr_ctx);
