@@ -1,6 +1,10 @@
 <script lang="ts">
     import { onDestroy, onMount } from "svelte";
-    import type { SummarizeResponse } from "../routes/summarize/+server";
+    import type {
+        SummarizeResponse,
+        SummarizeStatus,
+    } from "../routes/summarize/+server";
+    import { Jumper } from "svelte-loading-spinners";
 
     type Props = {
         transcript: string;
@@ -8,21 +12,33 @@
         heartbeatInterval: number;
     };
 
+    // Input properties
     let {
         transcript,
         summary = $bindable(),
         heartbeatInterval,
     }: Props = $props();
 
+    // Controller used for aborting the summarize call
     let abortController: AbortController | null = null;
+
+    // Whether the summarize gRPC service can be reached
     let heartbeat = $state(false);
+
+    // The latest status of the current summarize call
+    let summarizeStatus: SummarizeStatus | null = $state(null);
+
+    // Dynamic button colors of the summarize button
     let summarizeButtonColors = $derived(
-        heartbeat && transcript.length > 0
+        heartbeat && transcript.length > 0 && summarizeStatus === null
             ? "bg-indigo-900 hover:bg-indigo-800 text-gray-200"
             : "bg-indigo-900 hover:bg-indigo-900 text-gray-500",
     );
 
+    // The available models, populated inside the onMount method
     let models: string[] = $state([]);
+
+    // The model that is currently selected
     let selectedModel = $state("");
 
     async function handleSummarizeRequest() {
@@ -61,6 +77,7 @@
                 for (const line of chunk.split("\n")) {
                     try {
                         const data: SummarizeResponse = JSON.parse(line);
+                        summarizeStatus = data.status;
 
                         switch (data.status) {
                             case "processing":
@@ -85,6 +102,8 @@
             }
         } catch (error) {
             console.error("Request failed:", error);
+        } finally {
+            summarizeStatus = null;
         }
     }
 
@@ -116,23 +135,34 @@
     });
 </script>
 
-<div class="flex flex-col gap-1 align-center items-start">
+<div class="flex flex-col gap-1 align-center items-end">
     <div>
         <button
+            disabled={transcript.length <= 0 || summarizeStatus !== null}
             onclick={handleSummarizeRequest}
             class="py-2 px-4 rounded-lg font-semibold {summarizeButtonColors}"
         >
-            Summarize {heartbeat ? "💚" : "💔"}
+            {#if summarizeStatus === null}
+                Summarize {heartbeat ? "💚" : "💔"}
+            {:else}
+                <div class="flex flex-row gap-1 items-center align-middle">
+                    <span>Summarizing</span>
+                    <Jumper unit="em" size="1" color="#CCC" duration="1s" />
+                </div>
+            {/if}
         </button>
-        <select
-            disabled={transcript.length == 0}
-            bind:value={selectedModel}
-            class="py-2 px-4 rounded-lg h-full {summarizeButtonColors}"
-        >
-            {#each models as model}
-                <option value={model} class="text-white">{model}</option>
-            {/each}
-        </select>
+
+        {#if heartbeat}
+            <select
+                disabled={transcript.length == 0}
+                bind:value={selectedModel}
+                class="py-2 px-4 rounded-lg h-full {summarizeButtonColors}"
+            >
+                {#each models as model}
+                    <option value={model} class="text-white">{model}</option>
+                {/each}
+            </select>
+        {/if}
     </div>
 
     {#if summary.length > 0}

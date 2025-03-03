@@ -19,12 +19,12 @@
     class="min-h-screen flex flex-col items-center justify-center bg-indigo-950 p-4 font-mono text-md"
 >
     <div
-        class="flex flex-col bg-indigo-950 rounded-lg p-6 max-w-4xl w-full text-center"
+        class="flex flex-col gap-2 w-full max-w-5xl bg-indigo-950 rounded-lg p-6 text-center"
     >
         <Banner />
 
         <p class="mb-2 text-gray-400">
-            Upload an audio/video file and get its transcribed summary.
+            Upload any audio/video file and get its transcribed summary.
         </p>
 
         <div class="flex items-center mb-4 justify-between">

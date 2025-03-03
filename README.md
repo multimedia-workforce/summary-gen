@@ -1,6 +1,6 @@
-# Meeting Summary
+# Summary Generation
 
-This project is an automatic meeting summarization tool that transcribes and summarizes video/audio recordings using [whisper.cpp](https://github.com/ggerganov/whisper.cpp). The summary generation can be performed by an arbitrary OpenAI instance (e.g. self-hosted). It processes media files using `ffmpeg`, transcribes them with `whisper`, and summarizes them with the configured OpenAI instance. The frontend interface is built using SvelteKit and communicates with the backend via `gRPC`.
+This project is an automatic summarization tool that transcribes and summarizes video/audio recordings using [whisper.cpp](https://github.com/ggerganov/whisper.cpp). The summary generation can be performed by an arbitrary OpenAI instance (e.g. self-hosted). It processes media files using `ffmpeg`, transcribes them with `whisper`, and summarizes them with the configured OpenAI instance. The frontend interface is built using SvelteKit and communicates with the backend via `gRPC`.
 
 ## Features
 - [x] Transcribe audio and video files into text
@@ -73,8 +73,8 @@ Note that this must not be done when the project is started via docker compose.
 ### Installation
 Clone the repository and navigate to the project directory:
 ```bash
-git clone https://github.com/elias-plank/meeting-summary.git
-cd meeting-summary
+git clone https://github.com/elias-plank/summary-gen.git
+cd summary-gen
 ```
 
 #### Running the Backend
@@ -82,7 +82,7 @@ cd meeting-summary
 cd core
 cmake --preset=<os>-64-release
 cmake --preset=<os>-64-release --build
-./build/<os>-64-release/meeting-summary models/ggml-tiny.bin 50051
+./build/<os>-64-release/summary-gen models/ggml-tiny.bin 50051
 ```
 
 The backend will now listen for grpc messages at `localhost:50051`

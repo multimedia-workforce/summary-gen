@@ -45,7 +45,6 @@ int main(int argc, char **argv) {
         spdlog::set_level(spdlog::level::debug);
     }
 
-
     spdlog::info("Model path: {}", model_path);
     spdlog::info("Listen address: {}", listen_addr);
 
