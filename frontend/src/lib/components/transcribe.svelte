@@ -5,9 +5,10 @@
         TranscribeResponse,
         TranscribeStatus,
     } from "../../routes/transcribe/+server";
+    import Clipboard from "./clipboard.svelte";
 
     type Props = {
-        file: File | null;
+        file?: File;
         transcript: string;
         heartbeatInterval: number;
     };
@@ -23,13 +24,6 @@
 
     // The latest status of the current transcription
     let transcribeStatus: TranscribeStatus | null = $state(null);
-
-    // Dynamic button colors of the transcribe button
-    let transcribeButtonColors = $derived(
-        heartbeat && file !== null && transcribeStatus === null
-            ? "bg-indigo-900 hover:bg-indigo-800 text-gray-200"
-            : "bg-indigo-900 hover:bg-indigo-900 text-gray-500",
-    );
 
     /**
      * Performs a transcribe request to the gRPC service and streams the response to the frontend
@@ -114,26 +108,39 @@
     });
 </script>
 
-<div class="flex flex-col gap-1 align-center items-start">
-    <button
-        disabled={!file || transcribeStatus !== null}
-        onclick={handleTranscribeRequest}
-        class="py-2 px-4 rounded-lg font-semibold {transcribeButtonColors}"
-    >
-        {#if transcribeStatus === null}
-            Transcribe {heartbeat ? "💚" : "💔"}
-        {:else}
-            <div class="flex flex-row gap-1 items-center align-middle">
-                <span>Transcribing</span>
-                <Jumper unit="em" size="1" color="#CCC" duration="1s" />
-            </div>
-        {/if}
-    </button>
+<div
+    class="flex flex-col gap-1 align-center items-start card border-[1px] border-surface-100-900 p-4"
+>
+    <div class="flex flex-row w-full align-center items-center justify-between">
+        <div class="flex align-center items-center gap-2">
+            <button
+                type="button"
+                disabled={!file || transcribeStatus !== null}
+                onclick={handleTranscribeRequest}
+                class="btn preset-filled"
+            >
+                {#if transcribeStatus === null}
+                    Transcribe
+                {:else}
+                    <div class="flex flex-row gap-1 items-center align-middle">
+                        <span>Transcribing</span>
+                        <Jumper unit="em" size="1" color="#CCC" duration="1s" />
+                    </div>
+                {/if}
+            </button>
+            {heartbeat ? "💚" : "💔"}
+        </div>
+
+        <Clipboard
+            size={20}
+            disabled={transcript.length <= 0}
+            content={transcript}
+        />
+    </div>
 
     {#if transcript.length > 0}
-        <div class="mt-6 text-left bg-indigo-950 shadow-sm p-4 rounded-lg">
-            <h2 class="font-semibold mb-2 text-gray-200">Transcription:</h2>
-            <p class="text-gray-200 whitespace-pre-line">
+        <div class="mt-6 text-left">
+            <p>
                 {transcript || ""}
             </p>
         </div>

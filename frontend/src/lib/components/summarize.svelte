@@ -5,6 +5,7 @@
         SummarizeStatus,
     } from "../../routes/summarize/+server";
     import { Jumper } from "svelte-loading-spinners";
+    import Clipboard from "./clipboard.svelte";
 
     type Props = {
         transcript: string;
@@ -27,13 +28,6 @@
 
     // The latest status of the current summarize call
     let summarizeStatus: SummarizeStatus | null = $state(null);
-
-    // Dynamic button colors of the summarize button
-    let summarizeButtonColors = $derived(
-        heartbeat && transcript.length > 0 && summarizeStatus === null
-            ? "bg-indigo-900 hover:bg-indigo-800 text-gray-200"
-            : "bg-indigo-900 hover:bg-indigo-900 text-gray-500",
-    );
 
     // The available models, populated inside the onMount method
     let models: string[] = $state([]);
@@ -145,40 +139,48 @@
     });
 </script>
 
-<div class="flex flex-col gap-1 align-center items-end">
-    <div>
-        <button
-            disabled={transcript.length <= 0 || summarizeStatus !== null}
-            onclick={handleSummarizeRequest}
-            class="py-2 px-4 rounded-lg font-semibold {summarizeButtonColors}"
-        >
-            {#if summarizeStatus === null}
-                Summarize {heartbeat ? "💚" : "💔"}
-            {:else}
-                <div class="flex flex-row gap-1 items-center align-middle">
-                    <span>Summarizing</span>
-                    <Jumper unit="em" size="1" color="#CCC" duration="1s" />
-                </div>
-            {/if}
-        </button>
-
-        {#if heartbeat}
-            <select
-                disabled={transcript.length == 0}
-                bind:value={selectedModel}
-                class="py-2 px-4 rounded-lg h-full {summarizeButtonColors}"
+<div
+    class="flex flex-col gap-1 align-center items-start card border-[1px] border-surface-100-900 p-4"
+>
+    <div class="flex flex-row w-full align-center items-center justify-between">
+        <div class="flex flex-row gap-2 align-center items-center">
+            <button
+                type="button"
+                disabled={transcript.length <= 0 || summarizeStatus !== null}
+                onclick={handleSummarizeRequest}
+                class="btn preset-filled"
             >
-                {#each models as model}
-                    <option value={model} class="text-white">{model}</option>
-                {/each}
-            </select>
-        {/if}
+                {#if summarizeStatus === null}
+                    Summarize
+                {:else}
+                    <div class="flex flex-row gap-1 items-center align-middle">
+                        <span>Summarizing</span>
+                        <Jumper unit="em" size="1" color="#CCC" duration="1s" />
+                    </div>
+                {/if}
+            </button>
+
+            {#if heartbeat}
+                <select
+                    disabled={transcript.length == 0}
+                    bind:value={selectedModel}
+                    class="select variant-filled"
+                >
+                    {#each models as model}
+                        <option value={model}>{model}</option>
+                    {/each}
+                </select>
+            {/if}
+
+            {heartbeat ? "💚" : "💔"}
+        </div>
+
+        <Clipboard size={20} disabled={summary.length <= 0} content={summary} />
     </div>
 
     {#if summary.length > 0}
-        <div class="mt-6 text-left bg-indigo-950 shadow-sm p-4 rounded-lg">
-            <h2 class="font-semibold mb-2 text-gray-200">Summary:</h2>
-            <p class="text-gray-200 whitespace-pre-line">
+        <div class="mt-6 text-left">
+            <p>
                 {summary || ""}
             </p>
         </div>
