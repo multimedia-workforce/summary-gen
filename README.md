@@ -64,7 +64,7 @@ Ensure you have the following dependencies installed before building and running
 ### Additional Requirements
 Download a Whisper model before running the project. Models are available at [Whisper.cpp models](https://github.com/ggerganov/whisper.cpp#usage). Example:
 ```bash
-cd core/models
+cd backend/models
 wget https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin
 ```
 
@@ -79,7 +79,7 @@ cd summary-gen
 
 #### Running the Backend
 ```bash
-cd core
+cd backend
 cmake --preset=<os>-64-release
 cmake --preset=<os>-64-release --build
 ./build/<os>-64-release/summary-gen models/ggml-tiny.bin 50051
