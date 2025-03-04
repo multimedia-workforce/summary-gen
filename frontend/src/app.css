@@ -1,1 +1,16 @@
-@import 'tailwindcss'
+@import 'tailwindcss';
+@import '@fontsource/inter';
+@plugin '@tailwindcss/forms';
+
+@import '@skeletonlabs/skeleton';
+@import '@skeletonlabs/skeleton/optional/presets';
+@import '@skeletonlabs/skeleton/themes/cerberus';
+
+@source '../node_modules/@skeletonlabs/skeleton-svelte/dist';
+@custom-variant dark (&:where(.dark, .dark *));
+
+[data-theme='cerberus'] {
+    --heading-font-family: 'Inter', sans-serif;
+    --base-font-family: 'Inter', sans-serif;
+    --anchor-font-family: 'inherit';
+}
