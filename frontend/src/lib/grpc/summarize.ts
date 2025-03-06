@@ -19,6 +19,7 @@ export type SummarizePrompt = {
     prompt: string;
     transcript: string;
     model: string;
+    temperature: number;
 };
 
 /**

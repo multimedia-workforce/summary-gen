@@ -1,11 +1,9 @@
 <script lang="ts">
     import { Jumper } from "svelte-loading-spinners";
     import { onDestroy, onMount } from "svelte";
-    import type {
-        TranscribeResponse,
-        TranscribeStatus,
-    } from "../../routes/transcribe/+server";
-    import Clipboard from "./clipboard.svelte";
+    import type { TranscribeStatus } from "../../routes/api/transcribe/+server";
+    import { Button } from "@/components/ui/button";
+    import { hasHeartbeat, streamTranscription } from "@/http/transcribe";
 
     type Props = {
         file?: File;
@@ -39,63 +37,34 @@
         abortController = new AbortController();
 
         try {
-            const response = await fetch("/transcribe", {
-                method: "POST",
-                body: formData,
-                signal: abortController.signal, // Support for cancellation
-            });
+            for await (const data of streamTranscription(
+                file,
+                abortController.signal,
+            )) {
+                transcribeStatus = data.status;
 
-            if (!response.body) return;
-
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                const decoded = decoder.decode(value).trim();
-                if (!decoded) continue;
-
-                for (const chunk of decoded.split("\n")) {
-                    try {
-                        const data: TranscribeResponse = JSON.parse(
-                            atob(chunk),
-                        );
-                        transcribeStatus = data.status;
-
-                        switch (data.status) {
-                            case "processing":
-                                console.log("Processing...");
-                                break;
-                            case "chunk":
-                                transcript += data.result as string;
-                                break;
-                            case "completed":
-                                console.log("Transcribe finished");
-                                return; // Stop reading after final result
-                            case "error":
-                                console.error("Error:", data.result);
-                                transcript = `Error: ${data.result}`;
-                                return; // Stop reading on error
-                        }
-                    } catch (err) {
-                        console.error("Failed to parse JSON:", err);
-                    }
+                switch (data.status) {
+                    case "processing":
+                        break;
+                    case "chunk":
+                        transcript += data.result as string;
+                        break;
+                    case "completed":
+                        return;
+                    case "error":
+                        transcript = `Error: ${data.result}`;
+                        return;
                 }
             }
-        } catch (error) {
-            console.error("Request failed:", error);
+        } catch (err) {
+            console.error("Transcription failed:", err);
         } finally {
             transcribeStatus = null;
         }
     }
 
     function checkTranscribeHeartbeat() {
-        fetch("/transcribe/heartbeat")
-            .then((response) => response.json())
-            .then((data) => (heartbeat = data.status === "OK"))
-            .catch(() => (heartbeat = false));
+        hasHeartbeat().then((value) => (heartbeat = value));
     }
 
     onMount(() => {
@@ -108,41 +77,18 @@
     });
 </script>
 
-<div
-    class="flex flex-col gap-1 align-center items-start card border-[1px] border-surface-100-900 p-4"
+<Button
+    type="button"
+    disabled={!file || transcribeStatus !== null}
+    onclick={handleTranscribeRequest}
+    class="btn preset-filled"
 >
-    <div class="flex flex-row w-full align-center items-center justify-between">
-        <div class="flex align-center items-center gap-2">
-            <button
-                type="button"
-                disabled={!file || transcribeStatus !== null}
-                onclick={handleTranscribeRequest}
-                class="btn preset-filled"
-            >
-                {#if transcribeStatus === null}
-                    Transcribe
-                {:else}
-                    <div class="flex flex-row gap-1 items-center align-middle">
-                        <span>Transcribing</span>
-                        <Jumper unit="em" size="1" color="#CCC" duration="1s" />
-                    </div>
-                {/if}
-            </button>
-            {heartbeat ? "💚" : "💔"}
-        </div>
-
-        <Clipboard
-            size={20}
-            disabled={transcript.length <= 0}
-            content={transcript}
-        />
-    </div>
-
-    {#if transcript.length > 0}
-        <div class="mt-6 text-left">
-            <p>
-                {transcript || ""}
-            </p>
+    {#if transcribeStatus === null}
+        Transcribe {heartbeat ? "💚" : "💔"}
+    {:else}
+        <div class="flex flex-row gap-1 items-center align-middle">
+            <span>Transcribing</span>
+            <Jumper unit="em" size="1" color="#CCC" duration="1s" />
         </div>
     {/if}
-</div>
+</Button>

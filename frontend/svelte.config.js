@@ -11,6 +11,9 @@ const config = {
 		adapter: adapter(),
 		csrf: {
 			checkOrigin: false // Allow same-origin POST requests
+		},
+		alias: {
+			"@/*": "./src/lib/*"
 		}
 	}
 };
