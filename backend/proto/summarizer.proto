@@ -6,9 +6,9 @@ syntax = "proto3";
 import "google/protobuf/empty.proto";
 
 service Summarizer {
-  rpc summarize (Prompt) returns (Summary);
-  rpc models (google.protobuf.Empty) returns (Models);
-  rpc heartbeat (google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc summarize(Prompt) returns (Summary);
+  rpc models(google.protobuf.Empty) returns (Models);
+  rpc heartbeat(google.protobuf.Empty) returns (google.protobuf.Empty);
 }
 
 // Incoming summarize request
@@ -16,13 +16,10 @@ message Prompt {
   string model = 1;
   string prompt = 2;
   string transcript = 3;
+  float temperature = 4;
 }
 
 // Server responds with summary text
-message Summary {
-  string text = 1;
-}
+message Summary { string text = 1; }
 
-message Models {
-  repeated string models = 1;
-}
+message Models { repeated string models = 1; }

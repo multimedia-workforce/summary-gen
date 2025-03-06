@@ -47,7 +47,7 @@ grpc::Status SummarizerService::summarize(grpc::ServerContext *context, Prompt c
 
     CompletionRequest completion_request;
     completion_request.model = request->model();
-    completion_request.temperature = 0.2f;
+    completion_request.temperature = request->temperature();
     completion_request.messages = { Message::developer(COMPLETION_DEV_MESSAGE),
                                     Message::user(std::format("{}: {}", request->prompt(), request->transcript())) };
 
