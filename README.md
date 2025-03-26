@@ -2,7 +2,33 @@
 
 This project is an automatic summarization tool that transcribes and summarizes video/audio recordings using [whisper.cpp](https://github.com/ggerganov/whisper.cpp). The summary generation can be performed by an arbitrary OpenAI instance (e.g. self-hosted). It processes media files using `ffmpeg`, transcribes them with `whisper`, and summarizes them with the configured OpenAI instance. The frontend interface is built using SvelteKit and communicates with the backend via `gRPC`.
 
+## Features To Be Implemented
+
+- [ ] Finish implementation of new UI using shadcn-svelte (elias-plank)
+- [ ] OAuth login with GitHub account (elias-plank)
+- [ ] Analytics, maybe via OpenAI instance
+- [ ] Store previous transcriptions in database (needs backend and frontend)
+- [ ] User Settings like additional information that is passed to prompt
+
+### Spring Boot Service For Persistance
+
+The spring boot service should offer REST endpoints for storing and retrieving generated transcripts/summaries. It should also provide REST endpoints for configuring user settings, like additional information that should be provided to the OpenAI instance when a summary is generated. Also maybe the ability to configure the url of the OpenAI instance, at the moment it is hardcoded in the docker compose file.
+
+Responsible Persons:
+ - Fabian: backend
+ - MBlaim: frontend
+ - DefinedSpace: both? for settings
+
+### Spring Boot Service For Analytics
+
+The spring boot service should offer REST endpoints for analysing previous transcriptions/summaries, maybe some statitics. 
+
+Responsible Persons:
+ - Patrick: backend
+ - Benedikt: frontend
+
 ## Features
+
 - [x] Transcribe audio and video files into text
 - [x] Generate meeting summaries from transcripts
 - [x] gRPC-based communication between the backend and frontend
