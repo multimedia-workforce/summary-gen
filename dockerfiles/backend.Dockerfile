@@ -11,6 +11,7 @@ RUN apk add --no-cache \
     ffmpeg \
     ffmpeg-dev \
     grpc-dev \
+	curl-dev \
     protobuf \
     protobuf-dev \
     ca-certificates

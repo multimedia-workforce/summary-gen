@@ -26,21 +26,21 @@
     <Sidebar.Menu>
         {#each items as mainItem (mainItem.title)}
             <Collapsible.Root
-                    open={mainItem.isActive}
-                    class="group/collapsible"
+                open={mainItem.isActive}
+                class="group/collapsible"
             >
-                {#snippet child({props})}
+                {#snippet child({ props })}
                     <Sidebar.MenuItem {...props}>
                         {#if mainItem.items}
                             <Collapsible.Trigger>
-                                {#snippet child({props})}
+                                {#snippet child({ props })}
                                     <Sidebar.MenuButton {...props}>
                                         {#if mainItem.icon}
-                                            <mainItem.icon/>
+                                            <mainItem.icon />
                                         {/if}
                                         <span>{mainItem.title}</span>
                                         <ChevronRight
-                                                class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
+                                            class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
                                         />
                                     </Sidebar.MenuButton>
                                 {/snippet}
@@ -51,14 +51,14 @@
                                         {#each mainItem.items as subItem (subItem.title)}
                                             <Sidebar.MenuSubItem>
                                                 <Sidebar.MenuSubButton>
-                                                    {#snippet child({props})}
+                                                    {#snippet child({ props })}
                                                         <a
-                                                                href={subItem.url}
-                                                                {...props}
+                                                            href={subItem.url}
+                                                            {...props}
                                                         >
-														<span
-                                                        >{subItem.title}</span
-                                                        >
+                                                            <span
+                                                                >{subItem.title}</span
+                                                            >
                                                         </a>
                                                     {/snippet}
                                                 </Sidebar.MenuSubButton>
@@ -70,16 +70,13 @@
                         {:else}
                             <Sidebar.MenuButton {...props}>
                                 {#if mainItem.icon}
-                                    <mainItem.icon/>
+                                    <mainItem.icon />
                                 {/if}
-                                <a href={mainItem.url}
-                                   {...props}
-                                >
+                                <a href={mainItem.url} {...props}>
                                     <span>{mainItem.title}</span>
                                 </a>
                             </Sidebar.MenuButton>
                         {/if}
-
                     </Sidebar.MenuItem>
                 {/snippet}
             </Collapsible.Root>

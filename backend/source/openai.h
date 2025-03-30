@@ -30,9 +30,10 @@
 
 #include <format>
 
-#include <httplib.h>
 #include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
+
+#include "utils/http.h"
 
 struct Message {
     std::string content;
@@ -53,9 +54,12 @@ struct CompletionRequest {
     std::string model;
     std::vector<Message> messages;
     f64 temperature = 0.2f;
+    bool stream = true;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CompletionRequest, model, messages, temperature);
+using CompletionCallback = std::function<void(std::string)>;
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CompletionRequest, model, messages, temperature, stream);
 
 struct OpenAI {
     /**
@@ -68,69 +72,20 @@ struct OpenAI {
     /**
      * Performs a completion request
      * @param request The request parameters
-     * @return The completion result
+     * @param callback The callback used for completions
+     * @return The result
      */
-    Result<std::string> completion(CompletionRequest const &request);
+    Result<void> completion(CompletionRequest const &request, CompletionCallback const &callback);
 
     /**
      * Request the available models
      * @return A list of available models
      */
-    Result<std::vector<std::string>> models();
-
-private:
-    template<typename ResponseType>
-        requires(utils::DeserializableFromJson<ResponseType>)
-    Result<ResponseType> authorized_get(std::string_view path) {
-        auto headers = httplib::Headers{};
-        headers.emplace("Content-Type", "application/json");
-        headers.emplace("Authorization", std::format("Bearer {}", token));
-
-        auto const result = m_client.Get(std::format("{}/v1/{}", endpoint, path), headers);
-        if (not result) {
-            return utils::unexpected_format("Failed to perform GET request: {}", to_string(result.error()));
-        }
-        if (result->status != httplib::StatusCode::OK_200) {
-            return utils::unexpected_format("GET request with status '{}': {}", result->status, result->body);
-        }
-
-        try {
-            ResponseType const parsed = nlohmann::json::parse(result->body);
-            return parsed;
-        } catch (std::exception const &e) {
-            return utils::unexpected_format("Failed to parse response: {}", e.what());
-        }
-    }
-
-    template<typename RequestType, typename ResponseType>
-        requires(utils::SerializableToJson<RequestType> and utils::DeserializableFromJson<ResponseType>)
-    Result<ResponseType> authorized_post(std::string_view path, RequestType const &request) {
-        auto headers = httplib::Headers{};
-        headers.emplace("Content-Type", "application/json");
-        headers.emplace("Authorization", std::format("Bearer {}", token));
-
-        try {
-            nlohmann::json const body = request;
-            auto const result =
-                    m_client.Post(std::format("{}/v1/{}", endpoint, path), headers, body.dump(), "application/json");
-
-            if (not result) {
-                return tl::unexpected(std::format("Failed to perform POST request: {}", to_string(result.error())));
-            }
-            if (result->status != httplib::StatusCode::OK_200) {
-                return tl::unexpected(std::format("POST request with status '{}': {}", result->status, result->body));
-            }
-
-            ResponseType const parsed = nlohmann::json::parse(result->body);
-            return parsed;
-        } catch (std::exception const &e) {
-            return tl::unexpected(std::format("POST request failed: {}", e.what()));
-        }
-    }
+    Result<std::vector<std::string>> models() const;
 
     std::string endpoint;
     std::string token;
-    httplib::Client m_client;
+    utils::http::Client m_client;
 };
 
 
