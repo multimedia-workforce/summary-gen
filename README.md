@@ -4,7 +4,6 @@ This project is an automatic summarization tool that transcribes and summarizes 
 
 ## Features To Be Implemented
 
-- [ ] Finish implementation of new UI using shadcn-svelte (elias-plank)
 - [ ] OAuth login with GitHub account (elias-plank)
 - [ ] Analytics, maybe via OpenAI instance
 - [ ] Store previous transcriptions in database (needs backend and frontend)

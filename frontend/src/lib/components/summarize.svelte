@@ -4,6 +4,7 @@
     import { Jumper } from "svelte-loading-spinners";
     import { Button } from "@/components/ui/button";
     import { hasHeartbeat, streamSummarization } from "@/http/summarize";
+    import { streamTranscription } from "@/http/transcribe";
 
     type Props = {
         transcript: string;
@@ -46,12 +47,13 @@
                 abortController.signal,
             )) {
                 summarizeStatus = data.status;
-
                 switch (data.status) {
                     case "processing":
                         break;
+                    case "chunk":
+                        summary += data.result as string;
+                        break;
                     case "completed":
-                        summary = data.result as string;
                         return;
                     case "error":
                         summary = `Error: ${data.result}`;
@@ -59,7 +61,7 @@
                 }
             }
         } catch (err) {
-            console.error("Summarization failed:", err);
+            console.error("Transcription failed:", err);
         } finally {
             summarizeStatus = null;
         }

@@ -1,6 +1,11 @@
 # Use the official Node.js image
 FROM node:20-alpine
 
+# Install essential build tools and dependencies
+RUN apk add --no-cache \
+    protobuf \
+    protobuf-dev
+
 # Set the working directory
 WORKDIR /app
 

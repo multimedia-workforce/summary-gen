@@ -1,4 +1,4 @@
-import { models } from '@/grpc/summarize';
+import { models } from '$lib/grpc/summarizer';
 import { json } from '@sveltejs/kit';
 
 /**

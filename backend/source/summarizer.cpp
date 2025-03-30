@@ -21,7 +21,6 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-#include <httplib.h>
 #include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
 
@@ -42,7 +41,9 @@ Do not miss anything important. **Precision is critical.**
 SummarizerService::SummarizerService(std::string endpoint, std::string token)
     : m_client{ std::move(endpoint), std::move(token) } { }
 
-grpc::Status SummarizerService::summarize(grpc::ServerContext *context, Prompt const *request, Summary *response) {
+grpc::Status SummarizerService::summarize(grpc::ServerContext *context,
+                                          Prompt const *request,
+                                          grpc::ServerWriter<Summary> *writer) {
     spdlog::info("Incoming summarize request");
 
     CompletionRequest completion_request;
@@ -51,12 +52,16 @@ grpc::Status SummarizerService::summarize(grpc::ServerContext *context, Prompt c
     completion_request.messages = { Message::developer(COMPLETION_DEV_MESSAGE),
                                     Message::user(std::format("{}: {}", request->prompt(), request->transcript())) };
 
-    auto const result = m_client.completion(completion_request);
+    auto const result = m_client.completion(completion_request, [writer](std::string message) {
+        Summary summary;
+        summary.set_text(message);
+        writer->Write(summary);
+    });
+
     if (not result) {
         spdlog::error("Failed to summarize: {}", result.error());
         return grpc::Status{ grpc::StatusCode::UNAVAILABLE, result.error() };
     }
-    response->set_text(*result);
 
     spdlog::info("Summarize OK.");
     return grpc::Status::OK;

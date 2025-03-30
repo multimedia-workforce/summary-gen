@@ -56,3 +56,7 @@ message(STATUS "  - Libraries: ${Protobuf_LIBRARIES}")
 
 find_package(gRPC REQUIRED)
 message(STATUS "gRPC found.")
+
+find_package(CURL REQUIRED)
+message(STATUS "CURL found:")
+message(STATUS "  - Libraries: ${CURL_LIBRARIES}")
