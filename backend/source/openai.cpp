@@ -24,7 +24,6 @@
 #include "openai.h"
 #include "utils/collect.h"
 
-#include <httplib.h>
 #include <nlohmann/json.hpp>
 #include <tl/expected.hpp>
 
@@ -45,40 +44,51 @@ struct ModelsResponse {
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ModelsResponse::Entry, id, object, created);
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ModelsResponse, data);
 
-struct CompletionResponse {
-    struct Choice {
-        Message message;
+struct Choice {
+    struct Delta {
+        std::string role;
+        std::string content;
     };
 
+    Delta delta;
+};
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Choice::Delta, role, content);
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Choice, delta);
+
+struct ChatCompletionChunk {
+    std::string model;
     std::vector<Choice> choices;
 };
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CompletionResponse::Choice, message);
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CompletionResponse, choices);
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ChatCompletionChunk, model, choices)
 
 }// namespace
 
 OpenAI::OpenAI(std::string endpoint, std::string token)
     : endpoint{ std::move(endpoint) },
       token{ std::move(token) },
-      m_client{ this->endpoint } { }
+      m_client{ this->endpoint, this->token } { }
 
-Result<std::string> OpenAI::completion(CompletionRequest const &request) {
+Result<void> OpenAI::completion(CompletionRequest const &request, CompletionCallback const &callback) {
     spdlog::debug("Performing completion request: {}", nlohmann::json(request).dump());
+    return m_client.authorized_post_stream<CompletionRequest>(
+            "chat/completions", request, [callback](std::string message) {
+                try {
+                    if (message == "[DONE]") {
+                        return;
+                    }
 
-    auto const response = authorized_post<CompletionRequest, CompletionResponse>("chat/completions", request);
-    if (not response) {
-        return tl::unexpected(response.error());
-    }
-    if (response->choices.empty()) {
-        spdlog::error("Completion responded with zero choices.");
-        return tl::unexpected("Completion responded with zero choices.");
-    }
-    return std::ranges::begin(response->choices)->message.content;
+                    ChatCompletionChunk chunk = nlohmann::json::parse(message);
+                    callback(std::ranges::begin(chunk.choices)->delta.content);
+                } catch (std::exception const &e) {
+                    spdlog::error("Unsupported OpenAI stream message: {} (message: {})", e.what(), message);
+                }
+            });
 }
 
-Result<std::vector<std::string>> OpenAI::models() {
-    auto const response = authorized_get<ModelsResponse>("models");
+Result<std::vector<std::string>> OpenAI::models() const {
+    auto const response = m_client.authorized_get_response<ModelsResponse>("models");
     if (not response) {
         return tl::unexpected(response.error());
     }

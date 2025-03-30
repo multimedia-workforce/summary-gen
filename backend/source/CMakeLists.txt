@@ -34,7 +34,7 @@ add_executable("${PROJECT_NAME}"
         "${PROJECT_SOURCES}"
 )
 
-target_link_libraries("${PROJECT_NAME}" PRIVATE whisper spdlog::spdlog nlohmann_json tl::expected)
+target_link_libraries("${PROJECT_NAME}" PRIVATE whisper spdlog::spdlog nlohmann_json tl::expected CURL::libcurl)
 
 # Include directories for ffmpeg libraries
 target_include_directories("${PROJECT_NAME}" PRIVATE
@@ -43,7 +43,6 @@ target_include_directories("${PROJECT_NAME}" PRIVATE
         "${AVUTIL_INCLUDE_DIRS}"
         "${SWSCALE_INCLUDE_DIRS}"
         "${SWRESAMPLE_INCLUDE_DIRS}"
-        "${PROJECT_SOURCE_DIR}/extern"
 )
 
 # Link ffmpeg libraries

@@ -1,4 +1,4 @@
-import { transcribe } from '@/grpc/transcribe';
+import { transcribe } from '$lib/grpc/transcriber';
 
 const ETranscribeStatus = {
     PROCESSING: "processing",
@@ -13,6 +13,10 @@ export type TranscribeResponse = {
     result?: string;
 }
 
+function encode(obj: TranscribeResponse) {
+    return btoa(JSON.stringify(obj)) + '\n';
+}
+
 export async function POST({ request }) {
     const formData = await request.formData();
     const file = formData.get('file');
@@ -25,26 +29,17 @@ export async function POST({ request }) {
     const stream = new ReadableStream({
         async start(controller) {
             try {
-                // Send initial processing message
-                const processingMessage: TranscribeResponse = { status: ETranscribeStatus.PROCESSING };
-                controller.enqueue(btoa(JSON.stringify(processingMessage)) + '\n');
-
+                controller.enqueue(encode({ status: ETranscribeStatus.PROCESSING }));
                 await transcribe(reader, (text: string) => {
-                    const chunk: TranscribeResponse = { status: ETranscribeStatus.CHUNK, result: text };
-                    controller.enqueue(btoa(JSON.stringify(chunk)) + '\n');
+                    controller.enqueue(encode({ status: ETranscribeStatus.CHUNK, result: text }));
                 });
-
-                // Send the final result
-                const completedMessage: TranscribeResponse = { status: ETranscribeStatus.COMPLETED };
-                controller.enqueue(btoa(JSON.stringify(completedMessage)) + '\n');
+                controller.enqueue(encode({ status: ETranscribeStatus.COMPLETED }));
                 controller.close();
             } catch (error) {
-                const errorMessage: TranscribeResponse = {
+                controller.enqueue(encode({
                     status: ETranscribeStatus.ERROR,
                     result: error instanceof Error ? error.message : String(error)
-                };
-
-                controller.enqueue(btoa(JSON.stringify(errorMessage)) + '\n');
+                }));
                 controller.close();
             }
         }

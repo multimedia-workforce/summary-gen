@@ -6,7 +6,7 @@ syntax = "proto3";
 import "google/protobuf/empty.proto";
 
 service Summarizer {
-  rpc summarize(Prompt) returns (Summary);
+  rpc summarize(Prompt) returns (stream Summary);
   rpc models(google.protobuf.Empty) returns (Models);
   rpc heartbeat(google.protobuf.Empty) returns (google.protobuf.Empty);
 }

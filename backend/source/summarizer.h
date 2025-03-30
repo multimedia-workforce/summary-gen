@@ -41,10 +41,12 @@ struct SummarizerService final : Summarizer::Service {
      * Summarizes a given text
      * @param context The server context
      * @param request The summarize request
-     * @param response The response writer
+     * @param writer The response writer
      * @return A grpc status
      */
-    grpc::Status summarize(grpc::ServerContext *context, Prompt const *request, Summary *response) override;
+    grpc::Status summarize(grpc::ServerContext *context,
+                           Prompt const *request,
+                           grpc::ServerWriter<Summary> *writer) override;
 
     /**
      * Retrieves a list of the available OpenAI models

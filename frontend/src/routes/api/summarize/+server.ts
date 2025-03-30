@@ -1,7 +1,8 @@
-import { summarize, type SummarizePrompt } from '@/grpc/summarize';
+import { summarize, type Prompt } from '$lib/grpc/summarizer';
 
 const ESummarizeStatus = {
     PROCESSING: "processing",
+    CHUNK: "chunk",
     COMPLETED: "completed",
     ERROR: "error"
 } as const;
@@ -12,30 +13,26 @@ export type SummarizeResponse = {
     result?: string;
 }
 
-export async function POST({ request }) {
-    const summarizeRequest = await request.json() as SummarizePrompt;
+function encode(obj: SummarizeResponse) {
+    return btoa(JSON.stringify(obj)) + '\n';
+}
 
+export async function POST({ request }) {
+    const summarizeRequest = await request.json() as Prompt;
     const stream = new ReadableStream({
         async start(controller) {
             try {
-                // Send initial processing message
-                const processingMessage: SummarizeResponse = { status: ESummarizeStatus.PROCESSING };
-                controller.enqueue(btoa(JSON.stringify(processingMessage)) + '\n');
-
-                // Perform the long-running gRPC call
-                const result = await summarize(summarizeRequest);
-
-                // Send the final result
-                const completedMessage: SummarizeResponse = { status: ESummarizeStatus.COMPLETED, result };
-                controller.enqueue(btoa(JSON.stringify(completedMessage)) + '\n');
+                controller.enqueue(encode({ status: ESummarizeStatus.PROCESSING }));
+                await summarize(summarizeRequest, (text: string) => {
+                    controller.enqueue(encode({ status: ESummarizeStatus.CHUNK, result: text }));
+                });
+                controller.enqueue(encode({ status: ESummarizeStatus.COMPLETED }));
                 controller.close();
             } catch (error) {
-                const errorMessage: SummarizeResponse = {
+                controller.enqueue(encode({
                     status: ESummarizeStatus.ERROR,
                     result: error instanceof Error ? error.message : String(error)
-                };
-
-                controller.enqueue(btoa(JSON.stringify(errorMessage)) + '\n');
+                }));
                 controller.close();
             }
         }
@@ -44,7 +41,7 @@ export async function POST({ request }) {
     return new Response(stream, {
         headers: {
             'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache',
+            'Transfer-Encoding': 'chunked',
             'Connection': 'keep-alive'
         }
     });

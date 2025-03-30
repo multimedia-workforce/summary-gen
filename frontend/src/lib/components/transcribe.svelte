@@ -42,7 +42,6 @@
                 abortController.signal,
             )) {
                 transcribeStatus = data.status;
-
                 switch (data.status) {
                     case "processing":
                         break;
