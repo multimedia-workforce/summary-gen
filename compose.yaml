@@ -1,8 +1,8 @@
 services:
-  backend:
+  worker:
     build:
       context: .
-      dockerfile: ./dockerfiles/backend.Dockerfile
+      dockerfile: ./dockerfiles/worker.Dockerfile
     ports:
       - 443:443
       - 50051:50051
@@ -19,8 +19,8 @@ services:
     ports:
       - 8080:3000
     depends_on:
-      - backend
+      - worker
     environment:
       - GRPC_HEARTBEAT_INTERVAL=10000
-      - GRPC_LISTEN_ADDRESS=backend:50051
+      - GRPC_LISTEN_ADDRESS=worker:50051
       - BODY_SIZE_LIMIT=Infinity

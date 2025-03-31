@@ -41,11 +41,11 @@ Here is a preview of the current working state:
 
 > **Note**: Setting up an OpenAI instance can be skipped, I configured an [Ollama](https://ollama.com) instance with `deepseek-r1:1.5b` and `deepseek-r1:14b` models on my Oracle VM at https://engelbert.ip-ddns.com. This is already configured in the `compose.yml`.
 
-The recommended approach is running the meeting summary tool as a docker compose project. When using the docker compose project, the only thing that needs to be configured is the OpenAI instance that will be used for the summary generation. This can be configured inside the [compose.yaml](./compose.yaml) by altering the `backend` service:
+The recommended approach is running the meeting summary tool as a docker compose project. When using the docker compose project, the only thing that needs to be configured is the OpenAI instance that will be used for the summary generation. This can be configured inside the [compose.yaml](./compose.yaml) by altering the `worker` service:
 
 ```yaml
 services:
-  backend:
+  worker:
     ...
     environment:
       - OPENAI_ENDPOINT=http://host.docker.internal:11434
@@ -65,12 +65,12 @@ Once that is configured, you just need to execute the following command in the r
 docker compose up -d
 ```
 
-This automatically downloads all required dependencies and starts the backend and frontend. The frontend is then reachable at http://localhost:8080
+This automatically downloads all required dependencies and starts the worker and frontend. The frontend is then reachable at http://localhost:8080
 
 ## Usage
 
 1. Upload an audio or video file via the web interface.
-2. The backend processes the media file using `ffmpeg`.
+2. The worker processes the media file using `ffmpeg`.
 3. `whisper.cpp` transcribes the audio.
 4. The transcription is streamed to the web interface.
 5. Start a summary for the current transcription.
@@ -91,7 +91,7 @@ Ensure you have the following dependencies installed before building and running
 ### Additional Requirements
 Download a Whisper model before running the project. Models are available at [Whisper.cpp models](https://github.com/ggerganov/whisper.cpp#usage). Example:
 ```bash
-cd backend/models
+cd services/worker/models
 wget https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin
 ```
 
@@ -100,19 +100,19 @@ Note that this must not be done when the project is started via docker compose.
 ### Installation
 Clone the repository and navigate to the project directory:
 ```bash
-git clone https://github.com/elias-plank/summary-gen.git
+git clone https://github.com/multimedia-workforce/summary-gen.git
 cd summary-gen
 ```
 
-#### Running the Backend
+#### Running the Worker
 ```bash
-cd backend
+cd services/worker
 cmake --preset=<os>-64-release
 cmake --preset=<os>-64-release --build
-./build/<os>-64-release/summary-gen models/ggml-tiny.bin 50051
+./build/<os>-64-release/worker models/ggml-tiny.bin 50051
 ```
 
-The backend will now listen for grpc messages at `localhost:50051`
+The worker will now listen for grpc messages at `localhost:50051`
 
 #### Setting Up the Frontend
 ```bash
