@@ -8,10 +8,9 @@ services:
       - 50051:50051
     environment:
       - GRPC_LISTEN_ADDRESS=0.0.0.0:50051
-      - OPENAI_ENDPOINT=http://engelbert.ip-ddns.com:80
-      - OPENAI_TOKEN=""
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - OPENAI_ENDPOINT=https://engelbert.ip-ddns.com
+      - OPENAI_TOKEN=qhps7UQwMVG9zhxzq2vzHYR1YiDWd6xRptf729y16BfZ5WSmUO8mrb1lwFtQR6dr
+      - SPDLOG_DEBUG=true
 
   frontend:
     build:

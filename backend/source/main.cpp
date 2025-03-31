@@ -38,8 +38,8 @@ int main(int argc, char **argv) {
     spdlog::info("Starting transcriber server...");
     auto const model_path = env_or_default("WHISPER_MODEL_PATH", "models/ggml-tiny.bin");
     auto const listen_addr = env_or_default("GRPC_LISTEN_ADDRESS", "0.0.0.0:50051");
-    auto const openai_endpoint = env_or_default("OPENAI_ENDPOINT", "http://localhost:11434");
-    auto const jwt = env_or_default("OPENAI_TOKEN", "");
+    auto const openai_endpoint = env_or_default("OPENAI_ENDPOINT", "https://engelbert.ip-ddns.com");
+    auto const jwt = env_or_default("OPENAI_TOKEN", "qhps7UQwMVG9zhxzq2vzHYR1YiDWd6xRptf729y16BfZ5WSmUO8mrb1lwFtQR6dr");
 
     if (std::getenv("SPDLOG_DEBUG") != nullptr) {
         spdlog::set_level(spdlog::level::debug);

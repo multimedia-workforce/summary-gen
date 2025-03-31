@@ -39,7 +39,7 @@ Here is a preview of the current working state:
 
 ## Installation
 
-> **Note**: Setting up an OpenAI instance can be skipped, I configured a `deepseek-r1:14b` instance on http://engelbert.ip-ddns.com:80
+> **Note**: Setting up an OpenAI instance can be skipped, I configured an [Ollama](https://ollama.com) instance with `deepseek-r1:1.5b` and `deepseek-r1:14b` models on http://engelbert.ip-ddns.com:80
 
 The recommended approach is running the meeting summary tool as a docker compose project. When using the docker compose project, the only thing that needs to be configured is the OpenAI instance that will be used for the summary generation. This can be configured inside the [compose.yaml](./compose.yaml) by altering the `backend` service:
 

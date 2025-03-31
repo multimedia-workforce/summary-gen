@@ -55,7 +55,7 @@ grpc::Status TranscriberService::transcribe(grpc::ServerContext *context,
         auto *server_stream = static_cast<grpc::ServerReaderWriter<Transcript, Chunk> *>(user_data);
         auto const n_segments = whisper_full_n_segments(ctx);
         for (auto i = n_segments - n_new; i < n_segments; i++) {
-            spdlog::debug("writing segment: {}", i);
+            spdlog::debug("Writing transcript segment: {}", i);
             Transcript transcript{};
             transcript.set_text(whisper_full_get_segment_text(ctx, i));
             server_stream->Write(transcript);
@@ -67,6 +67,11 @@ grpc::Status TranscriberService::transcribe(grpc::ServerContext *context,
     if (not decoded) {
         spdlog::error("Failed to decode pcm32 from input: {}", decoded.error());
         auto const message = std::format("Failed to decode PCM32: {}", decoded.error());
+        return grpc::Status{ grpc::StatusCode::UNAVAILABLE, message };
+    }
+    if (decoded->empty()) {
+        spdlog::warn("Unable to retrieve any pcm32 samples from input, samples are empty");
+        auto const message = std::format("Failed to retrieve PCM32 samples");
         return grpc::Status{ grpc::StatusCode::UNAVAILABLE, message };
     }
 

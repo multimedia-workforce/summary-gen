@@ -53,6 +53,8 @@ grpc::Status SummarizerService::summarize(grpc::ServerContext *context,
                                     Message::user(std::format("{}: {}", request->prompt(), request->transcript())) };
 
     auto const result = m_client.completion(completion_request, [writer](std::string message) {
+        spdlog::debug("Received summary chunk of size {}", message.size());
+
         Summary summary;
         summary.set_text(message);
         writer->Write(summary);
