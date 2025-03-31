@@ -47,21 +47,26 @@ size_t http_post_write_stream(char const *ptr, size_t const size, size_t const n
     auto const total = size * nmemb;
     ctx->buffer.append(ptr, total);
 
-    std::istringstream stream(ctx->buffer);
-    std::string line;
-    std::string leftover;
+    size_t pos = 0;
+    while ((pos = ctx->buffer.find('\n')) != std::string::npos) {
+        std::string line = ctx->buffer.substr(0, pos);
+        ctx->buffer.erase(0, pos + 1);
 
-    while (std::getline(stream, line)) {
+        // Remove carriage return if present
+        if (!line.empty() && line.back() == '\r')
+            line.pop_back();
+
         if (line.starts_with("data: ")) {
-            ctx->callback(line.substr(6));
-        }
-        if (stream.eof()) {
-            leftover = line;
+            std::string json = line.substr(6);
+            if (!json.empty() && json != "[DONE]") {
+                ctx->callback(json);
+            }
         }
     }
-    ctx->buffer = std::move(leftover);
+
     return total;
 }
+
 }// namespace
 
 Headers::~Headers() {
