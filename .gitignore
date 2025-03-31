@@ -1,6 +1,6 @@
 .idea/
 download-ggml-model.sh
-backend/models
+services/worker/models
 samples/
 build/
 .cache/

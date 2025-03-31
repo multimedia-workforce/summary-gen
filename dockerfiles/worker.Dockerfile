@@ -11,7 +11,7 @@ RUN apk add --no-cache \
     ffmpeg \
     ffmpeg-dev \
     grpc-dev \
-	curl-dev \
+    curl-dev \
     protobuf \
     protobuf-dev \
     ca-certificates
@@ -20,7 +20,7 @@ RUN apk add --no-cache \
 WORKDIR /app
 
 # Copy the backend files
-COPY ./backend .
+COPY ./services/worker .
 COPY ./proto ../proto
 
 # Download tiny model if it isn't already present
@@ -32,4 +32,4 @@ RUN cmake --preset=lin-64-release
 RUN cmake --build --preset=lin-64-release
 
 # Run service
-CMD ["./build/lin-64-release/summary-backend", "./models/ggml-tiny.bin", "50051"]
+CMD ["./build/lin-64-release/worker", "./models/ggml-tiny.bin", "50051"]

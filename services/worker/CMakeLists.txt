@@ -24,7 +24,7 @@
 cmake_minimum_required(VERSION 3.22)
 
 # Set the project name and language
-project(summary-backend LANGUAGES C CXX)
+project(worker LANGUAGES C CXX)
 
 # Set the C and C++ standard
 set(CMAKE_C_STANDARD 11)
