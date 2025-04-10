@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
     auto const openai_endpoint = env_or_default("OPENAI_ENDPOINT", "https://engelbert.ip-ddns.com");
     auto const jwt = env_or_default("OPENAI_TOKEN", "REDACTED");
 
-    if (std::getenv("SPDLOG_DEBUG") != nullptr) {
+    if (true or std::getenv("SPDLOG_DEBUG") != nullptr) {
         spdlog::set_level(spdlog::level::debug);
     }
 
@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
     spdlog::info("Listen address: {}", listen_addr);
     spdlog::info("Persistence address: {}", persistence_addr);
 
-    auto const persistence_channel = grpc::CreateChannel(persistence_addr, grpc::InsecureChannelCredentials());
+    auto const persistence_channel = CreateChannel(persistence_addr, grpc::InsecureChannelCredentials());
     auto persistence_stub = persistence::Persistence::NewStub(persistence_channel);
 
     grpc::ServerBuilder builder;

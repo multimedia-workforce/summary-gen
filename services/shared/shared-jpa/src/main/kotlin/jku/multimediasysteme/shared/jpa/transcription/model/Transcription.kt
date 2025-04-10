@@ -16,9 +16,9 @@ data class Transcription(
     override var userId: UUID,
 
     @Column(columnDefinition = "TEXT")
-    var summaryText: String? = null,
+    var text: String? = null,
 
     var createdAt: Long = System.currentTimeMillis(),
 
- //  var transcriptionTime: Long?
+    var transcriptionTime: Long?
 ) : AbstractUserEntity(userId)

@@ -11,6 +11,7 @@ message Chunk {
   string id = 1;
   string userId = 2;
   string text = 3;
+  uint64 time = 4;
 }
 
 service Persistence {

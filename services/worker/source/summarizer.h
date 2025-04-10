@@ -29,7 +29,7 @@
 #include <summarizer.grpc.pb.h>
 #include <whisper.h>
 
-struct SummarizerService final : Summarizer::Service {
+struct SummarizerService final : summarizer::Summarizer::Service {
     /**
      * Instantiates a new summarizer gRPC service
      * @param endpoint The OpenAI endpoint
@@ -45,8 +45,8 @@ struct SummarizerService final : Summarizer::Service {
      * @return A grpc status
      */
     grpc::Status summarize(grpc::ServerContext *context,
-                           Prompt const *request,
-                           grpc::ServerWriter<Summary> *writer) override;
+                           summarizer::Prompt const *request,
+                           grpc::ServerWriter<summarizer::Summary> *writer) override;
 
     /**
      * Retrieves a list of the available OpenAI models
@@ -56,7 +56,7 @@ struct SummarizerService final : Summarizer::Service {
      */
     grpc::Status models(grpc::ServerContext *context,
                         google::protobuf::Empty const *request,
-                        Models *response) override;
+                        summarizer::Models *response) override;
 
     /**
      * Endpoint for checking whether the summarizer service is running
