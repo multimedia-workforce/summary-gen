@@ -12,7 +12,8 @@ service Transcriber {
 
 // Client sends video
 message Chunk {
-  bytes data = 1;
+  string userId = 1;
+  bytes data = 2;
 }
 
 // Server responds with transcribed text in a stream
