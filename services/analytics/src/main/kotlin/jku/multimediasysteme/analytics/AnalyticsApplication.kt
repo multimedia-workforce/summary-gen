@@ -1,4 +1,4 @@
-package jku.multimediasysteme.persistence
+package jku.multimediasysteme.analytics
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.domain.EntityScan
@@ -8,8 +8,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 @SpringBootApplication
 @EnableJpaRepositories("jku.multimediasysteme.shared.jpa.transcription.repository")
 @EntityScan("jku.multimediasysteme.shared.jpa.transcription.model")
-class PersistenceServiceApplication
+class AnalyticsApplication
 
 fun main(args: Array<String>) {
-    runApplication<PersistenceServiceApplication>(*args)
+    runApplication<AnalyticsApplication>(*args)
 }

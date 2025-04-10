@@ -1,7 +1,7 @@
 package jku.multimediasysteme.persistence.resources
 
-import jku.multimediasysteme.persistence.data.transcription.model.Transcription
-import jku.multimediasysteme.persistence.data.transcription.repository.TranscriptionRepository
+import jku.multimediasysteme.shared.jpa.transcription.model.Transcription
+import jku.multimediasysteme.shared.jpa.transcription.repository.TranscriptionRepository
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.util.*
@@ -11,7 +11,6 @@ import java.util.*
 class TranscriptionResource(
     private val repository: TranscriptionRepository
 ) {
-
     @PostMapping
     fun create(@RequestBody transcription: Transcription): Transcription =
         repository.save(transcription)

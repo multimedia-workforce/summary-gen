@@ -1,10 +1,10 @@
-package jku.multimediasysteme.persistence.data.transcription.model
+package jku.multimediasysteme.shared.jpa.transcription.model
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
-import jku.multimediasysteme.persistence.data.AbstractUserEntity
+import jku.multimediasysteme.shared.jpa.AbstractUserEntity
 import java.util.*
 
 @Entity
@@ -18,5 +18,7 @@ data class Transcription(
     @Column(columnDefinition = "TEXT")
     var summaryText: String? = null,
 
-    var createdAt: Long = System.currentTimeMillis()
+    var createdAt: Long = System.currentTimeMillis(),
+
+   // var transcriptionTime: Long?
 ) : AbstractUserEntity(userId)
