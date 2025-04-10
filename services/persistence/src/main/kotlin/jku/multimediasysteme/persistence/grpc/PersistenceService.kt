@@ -32,7 +32,8 @@ class PersistenceService(
         val transcription = Transcription(
             id = UUID.fromString(last.id),
             userId = UUID.fromString(last.userId),
-            summaryText = fullSummaryText
+            summaryText = fullSummaryText,
+            //transcriptionTime = 0,
         )
 
         withContext(Dispatchers.IO) {
