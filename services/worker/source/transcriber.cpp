@@ -25,6 +25,8 @@
 
 #include "decode.h"
 #include "transcriber.h"
+
+#include "utils/continuation.h"
 #include "utils/uuid.h"
 
 namespace {
@@ -54,8 +56,7 @@ void handle_segment(whisper_context *ctx, whisper_state *, int n_new, void *user
             persistence_chunk.set_userid(context->user_id);
             persistence_chunk.set_text(text);
             persistence_chunk.set_time(std::time(nullptr));
-            spdlog::debug("Result of persistence transcript write is: {}",
-                          context->persistence_writer->Write(persistence_chunk));
+            context->persistence_writer->Write(persistence_chunk);
         }
     }
 }
@@ -86,7 +87,16 @@ grpc::Status TranscriberService::transcribe(
     grpc::ClientContext persist_context;
     google::protobuf::Empty persist_response;
 
-    auto persist_writer = m_persistence_stub->persist(&persist_context, &persist_response);
+    auto persist_writer = m_persistence_stub->persistTranscript(&persist_context, &persist_response);
+    auto persist_finish = utils::Continuation{ [&persist_writer] {
+        if (not persist_writer) {
+            return;
+        }
+
+        persist_writer->WritesDone();
+        persist_writer->Finish();
+    } };
+
     if (!persist_writer) {
         spdlog::error("Cannot persist transcription, unable to establish connection!");
     }
@@ -129,13 +139,6 @@ grpc::Status TranscriberService::transcribe(
     if (whisper_full(context_lock->get(), params, decoded->data(), static_cast<int>(decoded->size())) != 0) {
         spdlog::error("Failed to transcribe audio");
         return grpc::Status{ grpc::StatusCode::UNAVAILABLE, "Failed to transcribe audio" };
-    }
-
-    if (persist_writer) {
-        persist_writer->WritesDone();
-        if (const auto status = persist_writer->Finish(); !status.ok()) {
-            spdlog::error("Failed to persist transcription: {}", status.error_message());
-        }
     }
 
     spdlog::info("Transcribe OK.");

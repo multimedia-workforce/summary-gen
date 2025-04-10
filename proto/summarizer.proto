@@ -15,10 +15,11 @@ service Summarizer {
 
 // Incoming summarize request
 message Prompt {
-  string model = 1;
-  string prompt = 2;
-  string transcript = 3;
-  float temperature = 4;
+  string userId = 1;
+  string model = 2;
+  string prompt = 3;
+  string transcript = 4;
+  float temperature = 5;
 }
 
 // Server responds with summary text

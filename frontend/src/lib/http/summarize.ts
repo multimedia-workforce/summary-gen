@@ -1,4 +1,8 @@
-import type { SummarizeResponse } from "../../routes/api/summarize/+server";
+import type {SummarizeResponse} from "../../routes/api/summarize/+server";
+import type {Prompt} from "@/grpc/gen/summarizer";
+
+// Bake in user ID right now
+const userId = "1cc8ed0d-191a-4aeb-8579-3d04e4c8d6b8";
 
 /**
  * Sends a transcript to the summarize API and yields streamed responses.
@@ -17,11 +21,12 @@ export async function* streamSummarization(
     const response = await fetch("/api/summarize", {
         method: "POST",
         body: JSON.stringify({
+            userId,
             transcript,
             prompt: "Summarize the following transcript",
             model,
             temperature
-        }),
+        } as Prompt),
         signal,
         headers: {
             "Content-Type": "application/json",
@@ -39,7 +44,7 @@ export async function* streamSummarization(
 
     try {
         while (true) {
-            const { done, value } = await reader.read();
+            const {done, value} = await reader.read();
             if (done) break;
 
             const decoded = decoder.decode(value).trim();

@@ -8,8 +8,8 @@ import jku.multimediasysteme.shared.jpa.AbstractUserEntity
 import java.util.*
 
 @Entity
-@Table(name = "transcriptions")
-data class Transcription(
+@Table(name = "summaries")
+data class Summary(
     @Id
     var id: UUID,
 
