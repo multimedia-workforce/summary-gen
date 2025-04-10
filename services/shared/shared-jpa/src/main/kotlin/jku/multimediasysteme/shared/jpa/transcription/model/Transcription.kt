@@ -20,5 +20,5 @@ data class Transcription(
 
     var createdAt: Long = System.currentTimeMillis(),
 
-   // var transcriptionTime: Long?
+ //  var transcriptionTime: Long?
 ) : AbstractUserEntity(userId)
