@@ -24,16 +24,16 @@ class PersistenceService(
         if (chunks.isEmpty()) {
             throw Status.FAILED_PRECONDITION
                 .withDescription("No chunks received")
-                .asRuntimeException()
+                .asException()
         }
 
-        val fullSummaryText = chunks.joinToString(separator = " ") { it.text }
+        val transcriptionText = chunks.joinToString(separator = " ") { it.text }
         val last = chunks.last()
         val transcription = Transcription(
             id = UUID.fromString(last.id),
             userId = UUID.fromString(last.userId),
-            summaryText = fullSummaryText,
-            //transcriptionTime = 0,
+            text = transcriptionText,
+            transcriptionTime = last.time
         )
 
         withContext(Dispatchers.IO) {

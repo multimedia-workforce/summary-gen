@@ -3,6 +3,8 @@
 
 syntax = "proto3";
 
+package transcriber;
+
 import "google/protobuf/empty.proto";
 
 service Transcriber {

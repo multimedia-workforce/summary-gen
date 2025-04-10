@@ -3,12 +3,15 @@ import {
     Chunk,
     Transcript,
 } from '$lib/grpc/gen/transcriber';
-import { Empty } from '$lib/grpc/gen/google/protobuf/empty';
+import {Empty} from '$lib/grpc/gen/google/protobuf/empty';
 
-import { credentials, type ClientDuplexStream } from '@grpc/grpc-js';
+import {credentials, type ClientDuplexStream} from '@grpc/grpc-js';
 
 const TRANSCRIBER_URL = process.env.GRPC_LISTEN_ADDRESS ?? 'localhost:50051';
 const client = new TranscriberClient(TRANSCRIBER_URL, credentials.createInsecure());
+
+// Bake in user ID right now
+const userId = "1cc8ed0d-191a-4aeb-8579-3d04e4c8d6b8";
 
 export type TranscribeCallback = (message: string) => void;
 
@@ -35,14 +38,14 @@ export async function transcribe(
 
         try {
             while (true) {
-                const { done, value } = await reader.read();
+                const {done, value} = await reader.read();
                 if (done) break;
 
                 let buffer = Buffer.from(value);
                 while (buffer.length > 0) {
                     const chunk = buffer.subarray(0, Math.min(chunkSize, buffer.length));
                     buffer = buffer.subarray(chunk.length);
-                    call.write(Chunk.fromPartial({ userId: "monkey", data: chunk }));
+                    call.write(Chunk.fromPartial({userId: userId, data: chunk}));
                 }
             }
 

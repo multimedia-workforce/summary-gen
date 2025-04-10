@@ -34,7 +34,7 @@
 
 #include <whisper.h>
 
-struct TranscriberService final : Transcriber::Service {
+struct TranscriberService final : transcriber::Transcriber::Service {
     /**
      * Instantiates a new transcriber service
      * @param model_path The path to the whisper model
@@ -49,7 +49,8 @@ struct TranscriberService final : Transcriber::Service {
      * @param stream Used for accessing the data
      * @return A grpc status
      */
-    grpc::Status transcribe(grpc::ServerContext *context, grpc::ServerReaderWriter<Transcript, Chunk> *stream) override;
+    grpc::Status transcribe(grpc::ServerContext *context,
+                            grpc::ServerReaderWriter<transcriber::Transcript, transcriber::Chunk> *stream) override;
 
     /**
      * Endpoint for checking whether the transcriber service is running

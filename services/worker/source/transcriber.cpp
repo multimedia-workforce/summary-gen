@@ -32,11 +32,11 @@ namespace {
 struct TranscribeContext {
     std::string transcription_id;
     std::string user_id;
-    grpc::ServerReaderWriter<Transcript, Chunk> *stream;
+    grpc::ServerReaderWriter<transcriber::Transcript, transcriber::Chunk> *stream;
     grpc::ClientWriter<persistence::Chunk> *persistence_writer;
 };
 
-void on_new_segment(whisper_context *ctx, whisper_state *, int n_new, void *user_data) {
+void handle_segment(whisper_context *ctx, whisper_state *, int n_new, void *user_data) {
     auto *context = static_cast<TranscribeContext *>(user_data);
     const int n_segments = whisper_full_n_segments(ctx);
 
@@ -44,7 +44,7 @@ void on_new_segment(whisper_context *ctx, whisper_state *, int n_new, void *user
         const char *text = whisper_full_get_segment_text(ctx, i);
         spdlog::debug("Writing transcript segment: {}", i);
 
-        Transcript transcript;
+        transcriber::Transcript transcript;
         transcript.set_text(text);
         context->stream->Write(transcript);
 
@@ -53,7 +53,9 @@ void on_new_segment(whisper_context *ctx, whisper_state *, int n_new, void *user
             persistence_chunk.set_id(context->transcription_id);
             persistence_chunk.set_userid(context->user_id);
             persistence_chunk.set_text(text);
-            context->persistence_writer->Write(persistence_chunk);
+            persistence_chunk.set_time(std::time(nullptr));
+            spdlog::debug("Result of persistence transcript write is: {}",
+                          context->persistence_writer->Write(persistence_chunk));
         }
     }
 }
@@ -76,8 +78,9 @@ TranscriberService::TranscriberService(std::filesystem::path const &model_path,
     m_context = std::make_unique<utils::ReadWriteLock<WhisperContext>>(context, whisper_free);
 }
 
-grpc::Status TranscriberService::transcribe(grpc::ServerContext *context,
-                                            grpc::ServerReaderWriter<Transcript, Chunk> *stream) {
+grpc::Status TranscriberService::transcribe(
+        grpc::ServerContext *context,
+        grpc::ServerReaderWriter<transcriber::Transcript, transcriber::Chunk> *stream) {
     spdlog::info("Incoming transcribe request");
 
     grpc::ClientContext persist_context;
@@ -88,7 +91,7 @@ grpc::Status TranscriberService::transcribe(grpc::ServerContext *context,
         spdlog::error("Cannot persist transcription, unable to establish connection!");
     }
 
-    Chunk chunk;
+    transcriber::Chunk chunk;
     std::ostringstream data_stream;
 
     while (stream->Read(&chunk)) {
@@ -106,7 +109,7 @@ grpc::Status TranscriberService::transcribe(grpc::ServerContext *context,
 
     auto params = whisper_full_default_params(WHISPER_SAMPLING_BEAM_SEARCH);
     params.new_segment_callback_user_data = &transcribe_context;
-    params.new_segment_callback = on_new_segment;
+    params.new_segment_callback = handle_segment;
 
     const std::string input_video = data_stream.str();
     const auto decoded = decode_pcm32({ input_video.begin(), input_video.end() });

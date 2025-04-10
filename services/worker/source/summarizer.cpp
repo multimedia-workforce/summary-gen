@@ -42,8 +42,8 @@ SummarizerService::SummarizerService(std::string endpoint, std::string token)
     : m_client{ std::move(endpoint), std::move(token) } { }
 
 grpc::Status SummarizerService::summarize(grpc::ServerContext *context,
-                                          Prompt const *request,
-                                          grpc::ServerWriter<Summary> *writer) {
+                                          summarizer::Prompt const *request,
+                                          grpc::ServerWriter<summarizer::Summary> *writer) {
     spdlog::info("Incoming summarize request");
 
     CompletionRequest completion_request;
@@ -55,7 +55,7 @@ grpc::Status SummarizerService::summarize(grpc::ServerContext *context,
     auto const result = m_client.completion(completion_request, [writer](std::string message) {
         spdlog::debug("Received summary chunk of size {}", message.size());
 
-        Summary summary;
+        summarizer::Summary summary;
         summary.set_text(message);
         writer->Write(summary);
     });
@@ -71,7 +71,7 @@ grpc::Status SummarizerService::summarize(grpc::ServerContext *context,
 
 grpc::Status SummarizerService::models(grpc::ServerContext *context,
                                        google::protobuf::Empty const *request,
-                                       Models *response) {
+                                       summarizer::Models *response) {
     spdlog::info("Incoming models request");
     auto const result = m_client.models();
     if (not result) {
