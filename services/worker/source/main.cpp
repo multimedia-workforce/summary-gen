@@ -51,15 +51,15 @@ int main(int argc, char **argv) {
     spdlog::info("Persistence address: {}", persistence_addr);
 
     auto const persistence_channel = CreateChannel(persistence_addr, grpc::InsecureChannelCredentials());
-    auto persistence_stub = persistence::Persistence::NewStub(persistence_channel);
+    std::shared_ptr const persistence_stub = persistence::Persistence::NewStub(persistence_channel);
 
     grpc::ServerBuilder builder;
     builder.AddListeningPort(listen_addr, grpc::InsecureServerCredentials());
 
-    TranscriberService transcriber_service{ model_path, std::move(persistence_stub) };
+    TranscriberService transcriber_service{ model_path, persistence_stub };
     builder.RegisterService(&transcriber_service);
 
-    SummarizerService summarizer_service{ openai_endpoint, jwt };
+    SummarizerService summarizer_service{ openai_endpoint, jwt, persistence_stub };
     builder.RegisterService(&summarizer_service);
 
     builder.BuildAndStart()->Wait();
