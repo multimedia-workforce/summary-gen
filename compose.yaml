@@ -1,26 +1,50 @@
+---
 services:
-  worker:
-    build:
-      context: .
-      dockerfile: ./dockerfiles/worker.Dockerfile
-    ports:
-      - 443:443
-      - 50051:50051
+  postgres:
+    container_name: postgres
     environment:
-      - GRPC_LISTEN_ADDRESS=0.0.0.0:50051
-      - OPENAI_ENDPOINT=https://engelbert.ip-ddns.com
-      - OPENAI_TOKEN=REDACTED
-      - SPDLOG_DEBUG=true
-
+      POSTGRES_DB: transcriptions
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    image: postgres:15
+    ports:
+      - '5432:5432'
+    restart: always
+    volumes:
+      - pgdata:/var/lib/postgresql/data
   frontend:
     build:
       context: .
       dockerfile: ./dockerfiles/frontend.Dockerfile
-    ports:
-      - 8080:3000
     depends_on:
       - worker
     environment:
       - GRPC_HEARTBEAT_INTERVAL=10000
       - GRPC_LISTEN_ADDRESS=worker:50051
       - BODY_SIZE_LIMIT=Infinity
+    ports:
+      - '8080:3000'
+  persistance-service:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/springboot-service.Dockerfile
+      args:
+        SERVICE_NAME: persistance-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres
+  worker:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/worker.Dockerfile
+    environment:
+      - GRPC_LISTEN_ADDRESS=0.0.0.0:50051
+      - OPENAI_ENDPOINT=https://engelbert.ip-ddns.com
+      - OPENAI_TOKEN=REDACTED
+      - SPDLOG_DEBUG=true
+    ports:
+      - '443:443'
+      - '50051:50051'
+volumes:
+  pgdata:
