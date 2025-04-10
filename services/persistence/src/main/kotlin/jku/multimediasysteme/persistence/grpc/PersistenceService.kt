@@ -4,8 +4,8 @@ import com.google.protobuf.Empty
 import io.grpc.Status
 import jku.multimediasysteme.grpc.persistence.Chunk
 import jku.multimediasysteme.grpc.persistence.PersistenceGrpcKt
-import jku.multimediasysteme.persistence.data.transcription.model.Transcription
-import jku.multimediasysteme.persistence.data.transcription.repository.TranscriptionRepository
+import jku.multimediasysteme.shared.jpa.transcription.model.Transcription
+import jku.multimediasysteme.shared.jpa.transcription.repository.TranscriptionRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.toList
@@ -21,7 +21,6 @@ class PersistenceService(
 
     override suspend fun persist(requests: Flow<Chunk>): Empty {
         val chunks = requests.toList()
-
         if (chunks.isEmpty()) {
             throw Status.FAILED_PRECONDITION
                 .withDescription("No chunks received")

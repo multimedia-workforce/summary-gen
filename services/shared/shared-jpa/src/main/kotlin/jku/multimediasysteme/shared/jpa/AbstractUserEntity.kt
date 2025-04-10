@@ -1,4 +1,4 @@
-package jku.multimediasysteme.persistence.data
+package jku.multimediasysteme.shared.jpa
 
 import jakarta.persistence.Column
 import jakarta.persistence.MappedSuperclass

@@ -1,6 +1,6 @@
-package jku.multimediasysteme.persistence.data.transcription.repository
+package jku.multimediasysteme.shared.jpa.transcription.repository
 
-import jku.multimediasysteme.persistence.data.transcription.model.Transcription
+import jku.multimediasysteme.shared.jpa.transcription.model.Transcription
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 import java.util.*
