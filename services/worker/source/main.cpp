@@ -38,6 +38,7 @@ int main(int argc, char **argv) {
     spdlog::info("Starting transcriber server...");
     auto const model_path = env_or_default("WHISPER_MODEL_PATH", "models/ggml-tiny.bin");
     auto const listen_addr = env_or_default("GRPC_LISTEN_ADDRESS", "0.0.0.0:50051");
+    auto const persistence_addr = env_or_default("GRPC_PERSISTENCE_ADDRESS", "0.0.0.0:50052");
     auto const openai_endpoint = env_or_default("OPENAI_ENDPOINT", "https://engelbert.ip-ddns.com");
     auto const jwt = env_or_default("OPENAI_TOKEN", "REDACTED");
 
@@ -47,11 +48,15 @@ int main(int argc, char **argv) {
 
     spdlog::info("Model path: {}", model_path);
     spdlog::info("Listen address: {}", listen_addr);
+    spdlog::info("Persistence address: {}", persistence_addr);
+
+    auto const persistence_channel = grpc::CreateChannel(persistence_addr, grpc::InsecureChannelCredentials());
+    auto persistence_stub = persistence::Persistence::NewStub(persistence_channel);
 
     grpc::ServerBuilder builder;
     builder.AddListeningPort(listen_addr, grpc::InsecureServerCredentials());
 
-    TranscriberService transcriber_service{ model_path };
+    TranscriberService transcriber_service{ model_path, std::move(persistence_stub) };
     builder.RegisterService(&transcriber_service);
 
     SummarizerService summarizer_service{ openai_endpoint, jwt };

@@ -29,15 +29,19 @@
 #include <filesystem>
 #include <memory>
 
+#include <persistence.grpc.pb.h>
 #include <transcriber.grpc.pb.h>
+
 #include <whisper.h>
 
 struct TranscriberService final : Transcriber::Service {
     /**
      * Instantiates a new transcriber service
      * @param model_path The path to the whisper model
+     * @param stub The stub for persistence
      */
-    explicit TranscriberService(std::filesystem::path const &model_path);
+    explicit TranscriberService(std::filesystem::path const &model_path,
+                                std::shared_ptr<persistence::Persistence::Stub> stub);
 
     /**
      * Transcribes a given video
@@ -61,6 +65,7 @@ struct TranscriberService final : Transcriber::Service {
 private:
     using WhisperContext = std::unique_ptr<whisper_context, decltype((whisper_free))>;
     std::unique_ptr<utils::ReadWriteLock<WhisperContext>> m_context;
+    std::shared_ptr<persistence::Persistence::Stub> m_persistence_stub;
 };
 
 #endif// TRANSCRIBER_H

@@ -42,7 +42,7 @@ export async function transcribe(
                 while (buffer.length > 0) {
                     const chunk = buffer.subarray(0, Math.min(chunkSize, buffer.length));
                     buffer = buffer.subarray(chunk.length);
-                    call.write(Chunk.fromPartial({ data: chunk }));
+                    call.write(Chunk.fromPartial({ userId: "monkey", data: chunk }));
                 }
             }
 

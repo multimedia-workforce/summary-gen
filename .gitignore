@@ -3,4 +3,4 @@ download-ggml-model.sh
 services/worker/models
 samples/
 build/
-.cache/
+.cache/1
