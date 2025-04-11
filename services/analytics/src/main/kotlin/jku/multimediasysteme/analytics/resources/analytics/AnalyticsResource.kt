@@ -1,4 +1,4 @@
-package jku.multimediasysteme.analytics.resources
+package jku.multimediasysteme.analytics.resources.analytics
 
 import jku.multimediasysteme.analytics.data.analytics.SmartSessionMetrics
 import jku.multimediasysteme.analytics.service.analytics.AnalyticsService
