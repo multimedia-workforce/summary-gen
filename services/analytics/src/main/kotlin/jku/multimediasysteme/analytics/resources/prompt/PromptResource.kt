@@ -1,4 +1,4 @@
-package jku.multimediasysteme.analytics.resources
+package jku.multimediasysteme.analytics.resources.prompt
 
 import jku.multimediasysteme.analytics.data.prompt.PromptRequest
 import jku.multimediasysteme.analytics.data.prompt.PromptResponse

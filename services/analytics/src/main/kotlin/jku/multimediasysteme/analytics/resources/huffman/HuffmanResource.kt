@@ -1,4 +1,4 @@
-package jku.multimediasysteme.analytics.resources
+package jku.multimediasysteme.analytics.resources.huffman
 
 import jku.multimediasysteme.analytics.service.huffman.HuffmanService
 import org.springframework.web.bind.annotation.*
