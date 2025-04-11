@@ -4,8 +4,10 @@ import com.google.protobuf.Empty
 import io.grpc.Status
 import jku.multimediasysteme.grpc.persistence.Chunk
 import jku.multimediasysteme.grpc.persistence.PersistenceGrpcKt
+import jku.multimediasysteme.shared.jpa.transcription.model.SmartSession
 import jku.multimediasysteme.shared.jpa.transcription.model.Summary
 import jku.multimediasysteme.shared.jpa.transcription.model.Transcription
+import jku.multimediasysteme.shared.jpa.transcription.repository.SmartSessionRepository
 import jku.multimediasysteme.shared.jpa.transcription.repository.SummaryRepository
 import jku.multimediasysteme.shared.jpa.transcription.repository.TranscriptionRepository
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +21,8 @@ import java.util.*
 @GrpcService
 class PersistenceService(
     private val transcriptionRepository: TranscriptionRepository,
-    private val summaryRepository: SummaryRepository
+    private val summaryRepository: SummaryRepository,
+    private val smartSessionRepository: SmartSessionRepository
 ) : PersistenceGrpcKt.PersistenceCoroutineImplBase() {
 
     override suspend fun persistTranscript(requests: Flow<Chunk>): Empty {
@@ -30,17 +33,18 @@ class PersistenceService(
                 .asException()
         }
 
-        val transcriptionText = chunks.joinToString(separator = " ") { it.text }
+        val first = chunks.first()
         val last = chunks.last()
-        val transcription = Transcription(
-            id = UUID.fromString(last.id),
-            userId = UUID.fromString(last.userId),
-            text = transcriptionText,
-            time = last.time
-        )
+
+        val duration = last.time - first.time
+        val text = chunks.joinToString(" ") { it.text }
+        val id = UUID.fromString(last.id)
+        val userId = UUID.fromString(last.userId)
+        val transcription = Transcription(id, userId, text, System.currentTimeMillis(), duration)
 
         withContext(Dispatchers.IO) {
             transcriptionRepository.save(transcription)
+            upsertSmartSession(id, userId, transcription = transcription)
         }
 
         return Empty.getDefaultInstance()
@@ -53,20 +57,38 @@ class PersistenceService(
                 .withDescription("No chunks received")
                 .asException()
         }
-
-        val summaryText = chunks.joinToString(separator = " ") { it.text }
+        val first = chunks.first()
         val last = chunks.last()
-        val transcription = Summary(
-            id = UUID.fromString(last.id),
-            userId = UUID.fromString(last.userId),
-            text = summaryText,
-            time = last.time
-        )
+
+        val duration = last.time - first.time
+        val text = chunks.joinToString(" ") { it.text }
+        val id = UUID.fromString(last.id)
+        val userId = UUID.fromString(last.userId)
+        val summary = Summary(id, userId, text, System.currentTimeMillis(), duration)
 
         withContext(Dispatchers.IO) {
-            summaryRepository.save(transcription)
+            summaryRepository.save(summary)
+            upsertSmartSession(id, userId, summary = summary)
         }
 
         return Empty.getDefaultInstance()
+    }
+
+    private fun upsertSmartSession(
+        id: UUID,
+        userId: UUID,
+        transcription: Transcription? = null,
+        summary: Summary? = null
+    ) {
+        val session = smartSessionRepository.findById(id).orElse(SmartSession(id = id, userId = userId))
+
+        if (transcription != null) {
+            session.transcription = transcription
+        }
+        if (summary != null) {
+            session.summary = summary
+        }
+
+        smartSessionRepository.save(session)
     }
 }

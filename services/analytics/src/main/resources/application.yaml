@@ -1,5 +1,6 @@
-OPENAI_ENDPOINT: https://engelbert.ip-ddns.com
+OPENAI_ENDPOINT: https://engelbert.ip-ddns.com/v1
 OPENAI_TOKEN: qhps7UQwMVG9zhxzq2vzHYR1YiDWd6xRptf729y16BfZ5WSmUO8mrb1lwFtQR6dr
+OPENAI_MODEL: deepseek-r1:1.5b
 
 spring:
   datasource:

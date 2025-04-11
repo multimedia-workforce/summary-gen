@@ -9,7 +9,8 @@ import org.springframework.web.reactive.function.client.WebClient
 @Component
 class DeepSeekClient(
     @Value("\${OPENAI_ENDPOINT}") private val endpoint: String,
-    @Value("\${OPENAI_TOKEN}") private val apiToken: String
+    @Value("\${OPENAI_TOKEN}") private val apiToken: String,
+    @Value("\${OPENAI_MODEL}") private val model: String
 ) {
 
     private val webClient = WebClient.builder()
@@ -18,12 +19,12 @@ class DeepSeekClient(
         .defaultHeader("Content-Type", "application/json")
         .build()
 
-    suspend fun query(prompt: String): String {
+    suspend fun query(fullPrompt: String): String {
         val request = mapOf(
-            "model" to "deepseek-chat",
+            "model" to model,
             "messages" to listOf(
                 mapOf("role" to "system", "content" to "Du bist ein hilfsbereiter Assistent."),
-                mapOf("role" to "user", "content" to prompt)
+                mapOf("role" to "user", "content" to fullPrompt)
             ),
             "stream" to false
         )
@@ -35,7 +36,6 @@ class DeepSeekClient(
             .bodyToMono(DeepSeekResponse::class.java)
             .awaitSingle()
 
-        return response.choices.firstOrNull()?.message?.content?.trim()
-            ?: "Keine Antwort erhalten."
+        return response.choices.firstOrNull()?.message?.content?.trim() ?: "Keine Antwort erhalten."
     }
 }

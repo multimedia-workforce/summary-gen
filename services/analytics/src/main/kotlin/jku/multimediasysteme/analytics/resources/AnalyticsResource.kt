@@ -1,6 +1,6 @@
 package jku.multimediasysteme.analytics.resources
 
-import jku.multimediasysteme.analytics.data.analytics.TranscriptionMetrics
+import jku.multimediasysteme.analytics.data.analytics.SmartSessionMetrics
 import jku.multimediasysteme.analytics.service.analytics.AnalyticsService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -10,8 +10,8 @@ import java.util.*
 @RequestMapping("/analytics")
 class AnalyticsResource(private val analyticsService: AnalyticsService) {
     @GetMapping("/analytics/global")
-    fun getGlobalDashboardMetrics(@RequestParam userId: UUID): ResponseEntity<TranscriptionMetrics> {
-        val metrics = analyticsService.getTranscriptionMetrics(userId)
+    fun getGlobalDashboardMetrics(@RequestParam userId: UUID): ResponseEntity<SmartSessionMetrics> {
+        val metrics = analyticsService.getSessionMetrics(userId)
         return ResponseEntity.ok(metrics)
     }
 
@@ -19,8 +19,8 @@ class AnalyticsResource(private val analyticsService: AnalyticsService) {
     fun getSelectedDashboardMetrics(
         @RequestParam userId: UUID,
         @RequestBody ids: List<UUID>
-    ): ResponseEntity<TranscriptionMetrics> {
-        val metrics = analyticsService.getTranscriptionMetrics(userId, ids)
+    ): ResponseEntity<SmartSessionMetrics> {
+        val metrics = analyticsService.getSessionMetrics(userId, ids)
         return ResponseEntity.ok(metrics)
     }
 }

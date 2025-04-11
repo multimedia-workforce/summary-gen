@@ -1,76 +1,99 @@
 package jku.multimediasysteme.analytics.service.analytics
 
-import jku.multimediasysteme.analytics.data.analytics.ActivityStats
-import jku.multimediasysteme.analytics.data.analytics.HeatmapCell
-import jku.multimediasysteme.analytics.data.analytics.SummaryLengthStats
+import jku.multimediasysteme.analytics.data.analytics.SmartSessionMetrics
+import jku.multimediasysteme.analytics.data.analytics.SummaryMetrics
 import jku.multimediasysteme.analytics.data.analytics.TranscriptionMetrics
+import jku.multimediasysteme.analytics.data.analytics.heatmap.HeatmapCell
+import jku.multimediasysteme.analytics.data.analytics.stats.ActivityStats
+import jku.multimediasysteme.analytics.data.analytics.stats.CreateTimeStats
+import jku.multimediasysteme.analytics.data.analytics.stats.TextStats
+import jku.multimediasysteme.shared.jpa.transcription.model.SmartSession
+import jku.multimediasysteme.shared.jpa.transcription.model.Summary
 import jku.multimediasysteme.shared.jpa.transcription.model.Transcription
-import jku.multimediasysteme.shared.jpa.transcription.repository.TranscriptionRepository
+import jku.multimediasysteme.shared.jpa.transcription.repository.SmartSessionRepository
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.ZoneId
 import java.util.*
 
 @Service
-class AnalyticsService(private val transcriptionRepository: TranscriptionRepository) {
-    fun getTranscriptionMetrics(userId: UUID): TranscriptionMetrics {
-        val transcriptions = transcriptionRepository.findAllByUserId(userId)
-        return buildMetrics(transcriptions)
+class AnalyticsService(private val smartSessionRepository: SmartSessionRepository) {
+    fun getSessionMetrics(userId: UUID): SmartSessionMetrics {
+        val sessions = smartSessionRepository.findAllByUserId(userId)
+        return buildSmartSessionMetrics(sessions)
     }
 
-    fun getTranscriptionMetrics(userId: UUID, ids: List<UUID>): TranscriptionMetrics {
-        val transcriptions = transcriptionRepository.findAllById(ids).filter { it.userId == userId }
-        return buildMetrics(transcriptions)
+    fun getSessionMetrics(userId: UUID, ids: List<UUID>): SmartSessionMetrics {
+        val sessions = smartSessionRepository.findAllById(ids).filter { it.userId == userId }
+        return buildSmartSessionMetrics(sessions)
     }
 
-    private fun buildMetrics(transcriptions: List<Transcription>): TranscriptionMetrics {
-        return TranscriptionMetrics(
-            totalTranscriptions = transcriptions.size,
-            summaryStats = buildSummaryStats(transcriptions),
-            //transcriptionTimeStats = buildTranscriptionTimeStats(transcriptions),
-            activityStats = buildActivityStats(transcriptions),
-            dailyHeatmap = buildHeatmap(transcriptions)
+    private fun buildSmartSessionMetrics(sessions: List<SmartSession>): SmartSessionMetrics {
+        val transcriptions = sessions.mapNotNull { it.transcription }
+        val summaries = sessions.mapNotNull { it.summary }
+
+        return SmartSessionMetrics(
+            dailyHeatmap = buildHeatmap(sessions),
+            transcriptionMetrics = buildTranscriptionMetrics(transcriptions),
+            summaryMetrics = buildSummaryMetrics(summaries)
         )
     }
 
-    private fun buildSummaryStats(transcriptions: List<Transcription>): SummaryLengthStats {
-        val lengths = transcriptions.map { it.summaryText?.length ?: 0 }
-        return SummaryLengthStats(
+    private fun buildTranscriptionMetrics(transcriptions: List<Transcription>): TranscriptionMetrics {
+        return TranscriptionMetrics(
+            totalTranscriptions = transcriptions.size,
+            textStats = buildTextStats(transcriptions.mapNotNull { it.text }),
+            createTimeStats = buildCreateTimeStats(transcriptions.mapNotNull { it.time }),
+            activityStats = buildActivityStats(transcriptions.map { it.createdAt })
+        )
+    }
+
+    private fun buildSummaryMetrics(summaries: List<Summary>): SummaryMetrics {
+        return SummaryMetrics(
+            totalTranscriptions = summaries.size,
+            textStats = buildTextStats(summaries.mapNotNull { it.text }),
+            createTimeStats = buildCreateTimeStats(summaries.mapNotNull { it.time }),
+            activityStats = buildActivityStats(summaries.map { it.createdAt })
+        )
+    }
+
+    private fun buildTextStats(texts: List<String>): TextStats {
+        val lengths = texts.map { it.length }
+        return TextStats(
             averageLength = lengths.average(),
             maxLength = lengths.maxOrNull(),
             minLength = lengths.minOrNull()
         )
     }
 
-//    private fun buildTranscriptionTimeStats(transcriptions: List<Transcription>): TranscriptionTimeStats {
-//        val times = transcriptions.mapNotNull { it.transcriptionTime }.sorted()
-//        return TranscriptionTimeStats(
-//            average = times.average(),
-//            median = times.getOrNull(times.size / 2),
-//            max = times.maxOrNull(),
-//            min = times.minOrNull()
-//        )
-//    }
+    private fun buildCreateTimeStats(times: List<Long>): CreateTimeStats {
+        val sorted = times.sorted()
+        return CreateTimeStats(
+            average = sorted.average(),
+            median = sorted.getOrNull(sorted.size / 2),
+            max = sorted.maxOrNull(),
+            min = sorted.minOrNull()
+        )
+    }
 
-    private fun buildActivityStats(transcriptions: List<Transcription>): ActivityStats {
+    private fun buildActivityStats(timestamps: List<Long>): ActivityStats {
         val zone = ZoneId.systemDefault()
-        val groupedByDay =
-            transcriptions.groupingBy { Instant.ofEpochMilli(it.createdAt).atZone(zone).toLocalDate() }.eachCount()
+        val groupedByDay = timestamps.groupingBy { Instant.ofEpochMilli(it).atZone(zone).toLocalDate() }.eachCount()
 
         return ActivityStats(
-            firstCreatedAt = transcriptions.minByOrNull { it.createdAt }?.createdAt,
-            lastCreatedAt = transcriptions.maxByOrNull { it.createdAt }?.createdAt,
-            mostActiveWeekday = transcriptions
-                .groupingBy { Instant.ofEpochMilli(it.createdAt).atZone(zone).dayOfWeek }
+            firstCreatedAt = timestamps.minOrNull(),
+            lastCreatedAt = timestamps.maxOrNull(),
+            mostActiveWeekday = timestamps
+                .groupingBy { Instant.ofEpochMilli(it).atZone(zone).dayOfWeek }
                 .eachCount()
                 .maxByOrNull { it.value }?.key?.name,
             avgPerDay = groupedByDay.values.average()
         )
     }
 
-    private fun buildHeatmap(transcriptions: List<Transcription>): List<HeatmapCell> {
+    private fun buildHeatmap(sessions: List<SmartSession>): List<HeatmapCell> {
         val zone = ZoneId.systemDefault()
-        return transcriptions.groupingBy { Instant.ofEpochMilli(it.createdAt).atZone(zone).toLocalDate() }.eachCount()
+        return sessions.groupingBy { Instant.ofEpochMilli(it.createdAt).atZone(zone).toLocalDate() }.eachCount()
             .map { (date, count) -> HeatmapCell(date.toString(), count) }
     }
 }
