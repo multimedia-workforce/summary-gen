@@ -10,17 +10,16 @@ import {credentials, type ClientDuplexStream} from '@grpc/grpc-js';
 const TRANSCRIBER_URL = process.env.GRPC_LISTEN_ADDRESS ?? 'localhost:50051';
 const client = new TranscriberClient(TRANSCRIBER_URL, credentials.createInsecure());
 
-// Bake in user ID right now
-const userId = "1cc8ed0d-191a-4aeb-8579-3d04e4c8d6b8";
-
 export type TranscribeCallback = (id: string, message: string) => void;
 
 /**
  * Sends a stream to the gRPC transcribe service and receives transcript stream.
+ * @param userId The ID of the user
  * @param reader The video/audio readable stream reader
  * @param callback Called with transcript text as it's received
  */
 export async function transcribe(
+    userId: string,
     reader: ReadableStreamDefaultReader,
     callback: TranscribeCallback
 ): Promise<void> {

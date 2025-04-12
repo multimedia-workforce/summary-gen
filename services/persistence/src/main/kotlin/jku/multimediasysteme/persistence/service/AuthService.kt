@@ -6,6 +6,7 @@ import jku.multimediasysteme.persistence.repository.UserRepository
 import jku.multimediasysteme.shared.auth.JwtService
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class AuthService(
@@ -34,4 +35,11 @@ class AuthService(
 
         return jwtService.generateToken(user.id)
     }
+
+    fun getUserFromToken(token: String): AppUser {
+        val userId = jwtService.extractUserId(token)
+        return userRepository.findById(UUID.fromString(userId))
+            .orElseThrow { Exception("Benutzer nicht gefunden.") }
+    }
+
 }

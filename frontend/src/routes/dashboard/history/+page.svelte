@@ -1,7 +1,14 @@
 <script lang="ts">
-    import * as Table from "$lib/components/ui/table/index.js";
+    import * as Table from "@/components/ui/table";
+    import {onMount} from "svelte";
+    import {type SmartSession, fetchSmartSessions} from "@/http/persistence";
 
-
+    let sessions: Array<SmartSession> = $state([]);
+    onMount(() => {
+        fetchSmartSessions().then((value) => {
+            sessions = value;
+        });
+    });
 </script>
 
 <div class="hidden space-y-6 px-10 pb-10 md:block">
@@ -12,6 +19,6 @@
         </p>
     </div>
     <div class="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">
-        <!-- TODO -->
+        {sessions}
     </div>
 </div>
