@@ -3,11 +3,13 @@ package jku.multimediasysteme.persistence
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.boot.runApplication
+import org.springframework.context.annotation.ComponentScan
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 
 @SpringBootApplication
-@EnableJpaRepositories("jku.multimediasysteme.shared.jpa.transcription.repository")
-@EntityScan("jku.multimediasysteme.shared.jpa.transcription.model")
+@EnableJpaRepositories("jku.multimediasysteme")
+@EntityScan("jku.multimediasysteme")
+@ComponentScan("jku.multimediasysteme")
 class PersistenceServiceApplication
 
 fun main(args: Array<String>) {

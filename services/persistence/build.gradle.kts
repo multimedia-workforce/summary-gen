@@ -4,8 +4,14 @@ plugins {
     id("org.springframework.boot") version "3.4.4"
     id("io.spring.dependency-management") version "1.1.7"
     id("com.google.protobuf") version "0.9.4"
+    id("org.jetbrains.kotlin.plugin.noarg") version "1.9.25"
 }
 
+noArg {
+    annotation("jakarta.persistence.Entity")
+    annotation("jakarta.persistence.MappedSuperclass")
+    annotation("jakarta.persistence.Embeddable")
+}
 group = "jku.multimediasysteme"
 version = "0.0.1-SNAPSHOT"
 
@@ -32,10 +38,12 @@ dependencies {
     implementation("io.grpc:grpc-netty-shaded:1.60.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("net.devh:grpc-server-spring-boot-starter:2.15.0.RELEASE")
+    implementation("org.springframework.boot:spring-boot-starter-security")
     runtimeOnly("org.postgresql:postgresql")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-
     implementation(project(":shared-jpa"))
+    implementation(project(":shared-auth"))
+
 }
 
 kotlin {

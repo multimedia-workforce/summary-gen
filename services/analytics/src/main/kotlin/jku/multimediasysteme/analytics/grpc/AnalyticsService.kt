@@ -20,11 +20,7 @@ class AnalyticsService(private val promptService: PromptService) :
                 prompt = request.prompt,
                 smartSessionIds = request.smartSessionIdsList.map(UUID::fromString)
             ) { chunk ->
-                trySend(
-                    SmartSessionPromptResponse.newBuilder()
-                        .setChunk(chunk)
-                        .build()
-                )
+                trySend(SmartSessionPromptResponse.newBuilder().setChunk(chunk).build())
             }
 
             awaitClose {
