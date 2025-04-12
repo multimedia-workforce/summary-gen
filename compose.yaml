@@ -37,6 +37,17 @@ services:
     depends_on:
       - postgres
 
+  analytics:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/springboot.Dockerfile
+      args:
+        SERVICE_NAME: analytics
+    ports:
+      - '8082:8082'
+    depends_on:
+      - postgres
+
   worker:
     build:
       context: .
