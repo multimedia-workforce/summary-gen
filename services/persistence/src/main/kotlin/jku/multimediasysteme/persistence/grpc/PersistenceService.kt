@@ -38,13 +38,13 @@ class PersistenceService(
 
         val duration = last.time - first.time
         val text = chunks.joinToString(" ") { it.text }
-        val id = UUID.fromString(last.id)
+        val id = UUID.fromString(last.transcriptId)
         val userId = UUID.fromString(last.userId)
         val transcription = Transcription(id, userId, text, System.currentTimeMillis(), duration)
 
         withContext(Dispatchers.IO) {
             transcriptionRepository.save(transcription)
-            upsertSmartSession(transcription = transcription)
+            upsertSmartSession(transcriptId = id, transcription = transcription)
         }
 
         return Empty.getDefaultInstance()
@@ -62,28 +62,24 @@ class PersistenceService(
 
         val duration = last.time - first.time
         val text = chunks.joinToString(" ") { it.text }
-        val id = UUID.fromString(last.id)
+        val id = UUID.fromString(last.summaryId)
+        val transcriptId = UUID.fromString(last.transcriptId)
         val userId = UUID.fromString(last.userId)
         val summary = Summary(id, userId, text, System.currentTimeMillis(), duration)
 
         withContext(Dispatchers.IO) {
             summaryRepository.save(summary)
-            upsertSmartSession(summary = summary)
+            upsertSmartSession(transcriptId = transcriptId, summary = summary)
         }
 
         return Empty.getDefaultInstance()
     }
 
-    fun upsertSmartSession(transcription: Transcription? = null, summary: Summary? = null) {
+    fun upsertSmartSession(transcriptId: UUID, transcription: Transcription? = null, summary: Summary? = null) {
         val userId = transcription?.userId ?: summary!!.userId
 
-        val existing = smartSessionRepository.findAllByUserId(userId)
-            .firstOrNull { session ->
-                (transcription != null && session.transcription?.id == transcription.id) ||
-                        (summary != null && session.summary?.id == summary.id)
-            }
-
-        val session = existing ?: SmartSession(userId = userId)
+        val existing = smartSessionRepository.findFirstByUserIdAndTranscriptionId(userId, transcriptId)
+        val session = existing.orElse(null) ?: SmartSession(userId = userId)
 
         transcription?.let { session.transcription = it }
         summary?.let { session.summary = it }

@@ -8,12 +8,14 @@ const userId = "1cc8ed0d-191a-4aeb-8579-3d04e4c8d6b8";
  * Sends a transcript to the summarize API and yields streamed responses.
  *
  * @param transcript The text to summarize.
+ * @param transcriptId The ID of the transcript
  * @param model The model to use.
  * @param temperature The temperature to use
  * @param signal Optional AbortSignal to cancel the request.
  */
 export async function* streamSummarization(
     transcript: string,
+    transcriptId: string,
     model: string,
     temperature: number,
     signal?: AbortSignal
@@ -23,6 +25,7 @@ export async function* streamSummarization(
         body: JSON.stringify({
             userId,
             transcript,
+            transcriptId,
             prompt: "Summarize the following transcript",
             model,
             temperature

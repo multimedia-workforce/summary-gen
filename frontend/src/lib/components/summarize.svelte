@@ -4,10 +4,10 @@
     import { Jumper } from "svelte-loading-spinners";
     import { Button } from "@/components/ui/button";
     import { hasHeartbeat, streamSummarization } from "@/http/summarize";
-    import { streamTranscription } from "@/http/transcribe";
 
     type Props = {
         transcript: string;
+        transcriptId: string;
         model?: string;
         summary: string;
         temperature: number;
@@ -17,6 +17,7 @@
     // Input properties
     let {
         transcript,
+        transcriptId,
         model,
         summary = $bindable(),
         temperature,
@@ -42,6 +43,7 @@
         try {
             for await (const data of streamSummarization(
                 transcript,
+                transcriptId,
                 model,
                 temperature,
                 abortController.signal,

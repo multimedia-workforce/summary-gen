@@ -13,7 +13,7 @@ const client = new TranscriberClient(TRANSCRIBER_URL, credentials.createInsecure
 // Bake in user ID right now
 const userId = "1cc8ed0d-191a-4aeb-8579-3d04e4c8d6b8";
 
-export type TranscribeCallback = (message: string) => void;
+export type TranscribeCallback = (id: string, message: string) => void;
 
 /**
  * Sends a stream to the gRPC transcribe service and receives transcript stream.
@@ -28,7 +28,7 @@ export async function transcribe(
         const call: ClientDuplexStream<Chunk, Transcript> = client.transcribe();
 
         call.on('data', (response: Transcript) => {
-            callback(response.text);
+            callback(response.id, response.text);
         });
 
         call.on('end', () => resolve());

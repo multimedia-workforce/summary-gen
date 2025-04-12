@@ -8,11 +8,12 @@
     type Props = {
         file?: File;
         transcript: string;
+        transcriptId: string;
         heartbeatInterval: number;
     };
 
     // Input properties
-    let { file, transcript = $bindable(), heartbeatInterval }: Props = $props();
+    let { file, transcript = $bindable(), transcriptId = $bindable(), heartbeatInterval }: Props = $props();
 
     // Controller used for aborting the transcribe call
     let abortController: AbortController | null = null;
@@ -47,6 +48,7 @@
                         break;
                     case "chunk":
                         transcript += data.result as string;
+                        transcriptId = data.id as string;
                         break;
                     case "completed":
                         return;

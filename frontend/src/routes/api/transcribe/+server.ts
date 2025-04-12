@@ -11,6 +11,7 @@ export type TranscribeStatus = typeof ETranscribeStatus[keyof typeof ETranscribe
 export type TranscribeResponse = {
     status: TranscribeStatus;
     result?: string;
+    id?: string;
 }
 
 function encode(obj: TranscribeResponse) {
@@ -30,8 +31,8 @@ export async function POST({request}) {
         async start(controller) {
             try {
                 controller.enqueue(encode({status: ETranscribeStatus.PROCESSING}));
-                await transcribe(reader, (text: string) => {
-                    controller.enqueue(encode({status: ETranscribeStatus.CHUNK, result: text}));
+                await transcribe(reader, (id: string, text: string) => {
+                    controller.enqueue(encode({status: ETranscribeStatus.CHUNK, result: text, id: id}));
                 });
                 controller.enqueue(encode({status: ETranscribeStatus.COMPLETED}));
                 controller.close();
