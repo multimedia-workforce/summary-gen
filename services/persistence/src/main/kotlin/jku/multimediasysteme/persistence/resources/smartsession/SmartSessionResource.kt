@@ -1,4 +1,4 @@
-package jku.multimediasysteme.persistence.resources
+package jku.multimediasysteme.persistence.resources.smartsession
 
 import jku.multimediasysteme.shared.jpa.transcription.model.SmartSession
 import jku.multimediasysteme.shared.jpa.transcription.repository.SmartSessionRepository
