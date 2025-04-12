@@ -86,7 +86,8 @@ grpc::Status SummarizerService::summarize(grpc::ServerContext *context,
                 writer->Write(summary);
 
                 persistence::Chunk persistence_chunk;
-                persistence_chunk.set_id(summaryId);
+                persistence_chunk.set_transcriptid(request->transcriptid());
+                persistence_chunk.set_summaryid(summaryId);
                 persistence_chunk.set_userid(request->userid());
                 persistence_chunk.set_text(message);
                 persistence_chunk.set_time(std::time(nullptr));

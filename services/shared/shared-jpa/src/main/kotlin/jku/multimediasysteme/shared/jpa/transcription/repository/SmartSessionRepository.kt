@@ -6,4 +6,5 @@ import java.util.*
 
 interface SmartSessionRepository : JpaRepository<SmartSession, UUID> {
     fun findAllByUserId(userId: UUID): List<SmartSession>
+    fun findFirstByUserIdAndTranscriptionId(userId: UUID, transcriptionId: UUID): Optional<SmartSession>
 }

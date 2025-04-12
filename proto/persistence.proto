@@ -8,10 +8,11 @@ option java_package = "jku.multimediasysteme.grpc.persistence";
 import "google/protobuf/empty.proto";
 
 message Chunk {
-  string id = 1;
-  string userId = 2;
-  string text = 3;
-  uint64 time = 4;
+  string transcriptId = 1;
+  string summaryId = 2;
+  string userId = 3;
+  string text = 4;
+  uint64 time = 5;
 }
 
 service Persistence {

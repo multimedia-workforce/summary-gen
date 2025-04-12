@@ -47,12 +47,13 @@ void handle_segment(whisper_context *ctx, whisper_state *, int n_new, void *user
         spdlog::debug("Writing transcript segment: {}", i);
 
         transcriber::Transcript transcript;
+        transcript.set_id(context->transcription_id);
         transcript.set_text(text);
         context->stream->Write(transcript);
 
         if (context->persistence_writer) {
             persistence::Chunk persistence_chunk;
-            persistence_chunk.set_id(context->transcription_id);
+            persistence_chunk.set_transcriptid(context->transcription_id);
             persistence_chunk.set_userid(context->user_id);
             persistence_chunk.set_text(text);
             persistence_chunk.set_time(std::time(nullptr));
