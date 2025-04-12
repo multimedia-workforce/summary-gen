@@ -1,10 +1,10 @@
 package jku.multimediasysteme.analytics.service.prompt
 
-import jku.multimediasysteme.analytics.data.prompt.deepseek.DeepSeekResponse
-import kotlinx.coroutines.reactor.awaitSingle
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
+import reactor.core.Disposable
 
 @Component
 class DeepSeekClient(
@@ -13,29 +13,31 @@ class DeepSeekClient(
     @Value("\${OPENAI_MODEL}") private val model: String
 ) {
 
-    private val webClient = WebClient.builder()
-        .baseUrl(endpoint)
-        .defaultHeader("Authorization", "Bearer $apiToken")
-        .defaultHeader("Content-Type", "application/json")
-        .build()
+    private val webClient = WebClient.builder().baseUrl(endpoint).defaultHeader("Authorization", "Bearer $apiToken")
+        .defaultHeader("Content-Type", "application/json").build()
 
-    suspend fun query(fullPrompt: String): String {
+    fun queryStreamed(prompt: String, onChunk: (String) -> Unit): Disposable {
         val request = mapOf(
-            "model" to model,
-            "messages" to listOf(
+            "model" to model, "messages" to listOf(
                 mapOf("role" to "system", "content" to "Du bist ein hilfsbereiter Assistent."),
-                mapOf("role" to "user", "content" to fullPrompt)
-            ),
-            "stream" to false
+                mapOf("role" to "user", "content" to prompt)
+            ), "stream" to true
         )
 
-        val response = webClient.post()
-            .uri("/chat/completions")
-            .bodyValue(request)
-            .retrieve()
-            .bodyToMono(DeepSeekResponse::class.java)
-            .awaitSingle()
+        val mapper = jacksonObjectMapper()
 
-        return response.choices.firstOrNull()?.message?.content?.trim() ?: "Keine Antwort erhalten."
+        return webClient.post().uri("/chat/completions").bodyValue(request).retrieve().bodyToFlux(String::class.java)
+            .subscribe { chunk ->
+                try {
+                    if (chunk.trim() == "[DONE]") return@subscribe
+                    val json = mapper.readTree(chunk.removePrefix("data:").trim())
+                    val content = json["choices"]?.firstOrNull()?.get("delta")?.get("content")?.asText()
+                    if (!content.isNullOrEmpty()) {
+                        onChunk(content)
+                    }
+                } catch (e: Exception) {
+                    println("Fehler beim Parsen: ${e.message}")
+                }
+            }
     }
 }

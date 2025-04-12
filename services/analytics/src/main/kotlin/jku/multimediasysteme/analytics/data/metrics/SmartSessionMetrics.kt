@@ -1,6 +1,6 @@
-package jku.multimediasysteme.analytics.data.analytics
+package jku.multimediasysteme.analytics.data.metrics
 
-import jku.multimediasysteme.analytics.data.analytics.heatmap.HeatmapCell
+import jku.multimediasysteme.analytics.data.metrics.heatmap.HeatmapCell
 
 data class SmartSessionMetrics(
     val dailyHeatmap: List<HeatmapCell>?,
