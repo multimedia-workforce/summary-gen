@@ -19,3 +19,7 @@
     - Huffmancode wurde hinzugefügt
     - PromptFeature für Transkription Selektion wurde hinzugefügt
 - Erweiterung des Datenbankschemas für Smartsession
+
+## 10.03.2025 10:00 - 12:00 (2.0h)
+- Umstellung der SmartSession Prompts auf Grpc Streams
+- Containerisierung des Analytics Service
