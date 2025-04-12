@@ -15,6 +15,19 @@ class SmartSessionResource(
     fun getByUser(@RequestParam userId: UUID): List<SmartSession> =
         repository.findAllByUserId(userId)
 
+    @GetMapping("/{id}")
+    fun getByIdAndUserId(
+        @PathVariable id: UUID,
+        @RequestParam userId: UUID
+    ): ResponseEntity<SmartSession> {
+        val session = repository.findByIdAndUserId(id, userId)
+        return if (session.isPresent) {
+            ResponseEntity.ok(session.get())
+        } else {
+            ResponseEntity.notFound().build()
+        }
+    }
+    
     @DeleteMapping("/{id}")
     fun deleteById(
         @PathVariable id: UUID,
