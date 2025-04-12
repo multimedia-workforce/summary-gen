@@ -1,4 +1,7 @@
 <script lang="ts">
+    import * as Table from "$lib/components/ui/table/index.js";
+
+
 </script>
 
 <div class="hidden space-y-6 px-10 pb-10 md:block">
