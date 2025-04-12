@@ -1,4 +1,4 @@
-package jku.multimediasysteme.analytics.data.analytics.stats
+package jku.multimediasysteme.analytics.data.metrics.stats
 
 data class ActivityStats(
     val firstCreatedAt: Long?,

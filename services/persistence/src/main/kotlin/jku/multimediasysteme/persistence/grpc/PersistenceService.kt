@@ -44,7 +44,7 @@ class PersistenceService(
 
         withContext(Dispatchers.IO) {
             transcriptionRepository.save(transcription)
-            upsertSmartSession(id, userId, transcription = transcription)
+            upsertSmartSession(transcription = transcription)
         }
 
         return Empty.getDefaultInstance()
@@ -68,26 +68,25 @@ class PersistenceService(
 
         withContext(Dispatchers.IO) {
             summaryRepository.save(summary)
-            upsertSmartSession(id, userId, summary = summary)
+            upsertSmartSession(summary = summary)
         }
 
         return Empty.getDefaultInstance()
     }
 
-    private fun upsertSmartSession(
-        id: UUID,
-        userId: UUID,
-        transcription: Transcription? = null,
-        summary: Summary? = null
-    ) {
-        val session = smartSessionRepository.findById(id).orElse(SmartSession(id = id, userId = userId))
+    fun upsertSmartSession(transcription: Transcription? = null, summary: Summary? = null) {
+        val userId = transcription?.userId ?: summary!!.userId
 
-        if (transcription != null) {
-            session.transcription = transcription
-        }
-        if (summary != null) {
-            session.summary = summary
-        }
+        val existing = smartSessionRepository.findAllByUserId(userId)
+            .firstOrNull { session ->
+                (transcription != null && session.transcription?.id == transcription.id) ||
+                        (summary != null && session.summary?.id == summary.id)
+            }
+
+        val session = existing ?: SmartSession(userId = userId)
+
+        transcription?.let { session.transcription = it }
+        summary?.let { session.summary = it }
 
         smartSessionRepository.save(session)
     }

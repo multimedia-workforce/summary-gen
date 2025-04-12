@@ -8,8 +8,7 @@ import java.util.*
 @Table(name = "smart_sessions")
 data class SmartSession(
     @Id
-    var id: UUID,
-
+    var id: UUID = UUID.randomUUID(),
     override var userId: UUID,
 
     @OneToOne(fetch = FetchType.LAZY)

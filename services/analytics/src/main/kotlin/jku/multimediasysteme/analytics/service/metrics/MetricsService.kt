@@ -1,12 +1,12 @@
-package jku.multimediasysteme.analytics.service.analytics
+package jku.multimediasysteme.analytics.service.metrics
 
-import jku.multimediasysteme.analytics.data.analytics.SmartSessionMetrics
-import jku.multimediasysteme.analytics.data.analytics.SummaryMetrics
-import jku.multimediasysteme.analytics.data.analytics.TranscriptionMetrics
-import jku.multimediasysteme.analytics.data.analytics.heatmap.HeatmapCell
-import jku.multimediasysteme.analytics.data.analytics.stats.ActivityStats
-import jku.multimediasysteme.analytics.data.analytics.stats.CreateTimeStats
-import jku.multimediasysteme.analytics.data.analytics.stats.TextStats
+import jku.multimediasysteme.analytics.data.metrics.SmartSessionMetrics
+import jku.multimediasysteme.analytics.data.metrics.SummaryMetrics
+import jku.multimediasysteme.analytics.data.metrics.TranscriptionMetrics
+import jku.multimediasysteme.analytics.data.metrics.heatmap.HeatmapCell
+import jku.multimediasysteme.analytics.data.metrics.stats.ActivityStats
+import jku.multimediasysteme.analytics.data.metrics.stats.CreateTimeStats
+import jku.multimediasysteme.analytics.data.metrics.stats.TextStats
 import jku.multimediasysteme.shared.jpa.transcription.model.SmartSession
 import jku.multimediasysteme.shared.jpa.transcription.model.Summary
 import jku.multimediasysteme.shared.jpa.transcription.model.Transcription
@@ -17,7 +17,7 @@ import java.time.ZoneId
 import java.util.*
 
 @Service
-class AnalyticsService(private val smartSessionRepository: SmartSessionRepository) {
+class MetricsService(private val smartSessionRepository: SmartSessionRepository) {
     fun getSessionMetrics(userId: UUID): SmartSessionMetrics {
         val sessions = smartSessionRepository.findAllByUserId(userId)
         return buildSmartSessionMetrics(sessions)
