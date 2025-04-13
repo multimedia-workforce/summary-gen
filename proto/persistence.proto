@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package persistence;
+
+option java_multiple_files = true;
+option java_package = "jku.multimediasysteme.grpc.persistence";
+
+import "google/protobuf/empty.proto";
+
+message Chunk {
+  string transcriptId = 1;
+  string summaryId = 2;
+  string userId = 3;
+  string text = 4;
+  uint64 time = 5;
+}
+
+service Persistence {
+  rpc persistTranscript(stream Chunk) returns (google.protobuf.Empty);
+  rpc persistSummary(stream Chunk) returns (google.protobuf.Empty);
+}

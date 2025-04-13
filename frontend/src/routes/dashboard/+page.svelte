@@ -6,13 +6,14 @@
     } from "@/components/file-upload.svelte";
     import Transcribe from "@/components/transcribe.svelte";
     import Summarize from "@/components/summarize.svelte";
-    import * as Collapsible from "$lib/components/ui/collapsible/index.js";
+    import * as Collapsible from "@/components/ui/collapsible";
 
     const { data } = $props();
     let files: Array<UploadedFile> = $state([]);
     let model: string | undefined = $state(undefined);
     let temperature: number = $state(0.1);
     let transcript: string = $state("");
+    let transcriptId: string = $state("");
     let summary: string = $state("");
 
     const file = $derived(files.length > 0 ? files[0].file : undefined);
@@ -33,6 +34,7 @@
         <div class="flex flex-row gap-2">
             <Transcribe
                 bind:transcript
+                bind:transcriptId
                 heartbeatInterval={data.heartbeatInterval}
                 {file}
             />
@@ -40,6 +42,7 @@
                 bind:summary
                 heartbeatInterval={data.heartbeatInterval}
                 {transcript}
+                {transcriptId}
                 {model}
                 {temperature}
             />

@@ -1,9 +1,5 @@
-import type { PageServerLoad } from "./$types";
+import { redirect } from '@sveltejs/kit';
 
-const HEARTBEAT_INTERVAL = Number(process.env.GRPC_HEARTBEAT_INTERVAL ?? 10000);
-
-export const load: PageServerLoad = async ({ params }) => {
-    return {
-        heartbeatInterval: HEARTBEAT_INTERVAL,
-    };
-};
+export function load() {
+    throw redirect(302, '/dashboard');
+}

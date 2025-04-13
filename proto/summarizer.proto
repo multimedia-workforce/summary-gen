@@ -3,6 +3,8 @@
 
 syntax = "proto3";
 
+package summarizer;
+
 import "google/protobuf/empty.proto";
 
 service Summarizer {
@@ -13,10 +15,12 @@ service Summarizer {
 
 // Incoming summarize request
 message Prompt {
-  string model = 1;
-  string prompt = 2;
-  string transcript = 3;
-  float temperature = 4;
+  string userId = 1;
+  string transcriptId = 2;
+  string model = 3;
+  string prompt = 4;
+  string transcript = 5;
+  float temperature = 6;
 }
 
 // Server responds with summary text

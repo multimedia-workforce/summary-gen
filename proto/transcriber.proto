@@ -3,6 +3,8 @@
 
 syntax = "proto3";
 
+package transcriber;
+
 import "google/protobuf/empty.proto";
 
 service Transcriber {
@@ -12,10 +14,12 @@ service Transcriber {
 
 // Client sends video
 message Chunk {
-  bytes data = 1;
+  string userId = 1;
+  bytes data = 2;
 }
 
 // Server responds with transcribed text in a stream
 message Transcript {
-  string text = 1;
+  string id = 1;
+  string text = 2;
 }

@@ -26,6 +26,9 @@
 
 #include "summarizer.h"
 
+#include "utils/continuation.h"
+#include "utils/uuid.h"
+
 constexpr auto COMPLETION_DEV_MESSAGE = R"(
 Summarize this meeting transcription with **maximum accuracy and clarity**. The summary **must** include:
 
@@ -38,13 +41,35 @@ This summary **must be concise but complete**—no fluff, no unnecessary details
 Do not miss anything important. **Precision is critical.**
 )";
 
-SummarizerService::SummarizerService(std::string endpoint, std::string token)
-    : m_client{ std::move(endpoint), std::move(token) } { }
+SummarizerService::SummarizerService(std::string endpoint,
+                                     std::string token,
+                                     std::shared_ptr<persistence::Persistence::Stub> stub)
+    : m_client{ std::move(endpoint), std::move(token) },
+      m_persistence_stub{ std::move(stub) } { }
 
 grpc::Status SummarizerService::summarize(grpc::ServerContext *context,
-                                          Prompt const *request,
-                                          grpc::ServerWriter<Summary> *writer) {
+                                          summarizer::Prompt const *request,
+                                          grpc::ServerWriter<summarizer::Summary> *writer) {
     spdlog::info("Incoming summarize request");
+
+    grpc::ClientContext persist_context;
+    google::protobuf::Empty persist_response;
+
+    auto persist_writer = m_persistence_stub->persistSummary(&persist_context, &persist_response);
+    auto persist_finish = utils::Continuation{ [&persist_writer] {
+        if (not persist_writer) {
+            return;
+        }
+
+        persist_writer->WritesDone();
+        persist_writer->Finish();
+    } };
+
+    if (!persist_writer) {
+        spdlog::error("Cannot persist transcription, unable to establish connection!");
+    }
+
+    auto const summaryId = utils::UUID::generate_v4();
 
     CompletionRequest completion_request;
     completion_request.model = request->model();
@@ -52,13 +77,22 @@ grpc::Status SummarizerService::summarize(grpc::ServerContext *context,
     completion_request.messages = { Message::developer(COMPLETION_DEV_MESSAGE),
                                     Message::user(std::format("{}: {}", request->prompt(), request->transcript())) };
 
-    auto const result = m_client.completion(completion_request, [writer](std::string message) {
-        spdlog::debug("Received summary chunk of size {}", message.size());
+    auto const result =
+            m_client.completion(completion_request, [request, writer, &persist_writer, summaryId](std::string message) {
+                spdlog::debug("Received summary chunk of size {}", message.size());
 
-        Summary summary;
-        summary.set_text(message);
-        writer->Write(summary);
-    });
+                summarizer::Summary summary;
+                summary.set_text(message);
+                writer->Write(summary);
+
+                persistence::Chunk persistence_chunk;
+                persistence_chunk.set_transcriptid(request->transcriptid());
+                persistence_chunk.set_summaryid(summaryId);
+                persistence_chunk.set_userid(request->userid());
+                persistence_chunk.set_text(message);
+                persistence_chunk.set_time(std::time(nullptr));
+                persist_writer->Write(persistence_chunk);
+            });
 
     if (not result) {
         spdlog::error("Failed to summarize: {}", result.error());
@@ -71,7 +105,7 @@ grpc::Status SummarizerService::summarize(grpc::ServerContext *context,
 
 grpc::Status SummarizerService::models(grpc::ServerContext *context,
                                        google::protobuf::Empty const *request,
-                                       Models *response) {
+                                       summarizer::Models *response) {
     spdlog::info("Incoming models request");
     auto const result = m_client.models();
     if (not result) {

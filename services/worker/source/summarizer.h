@@ -26,16 +26,17 @@
 
 #include "openai.h"
 
+#include <persistence.grpc.pb.h>
 #include <summarizer.grpc.pb.h>
-#include <whisper.h>
 
-struct SummarizerService final : Summarizer::Service {
+struct SummarizerService final : summarizer::Summarizer::Service {
     /**
      * Instantiates a new summarizer gRPC service
      * @param endpoint The OpenAI endpoint
      * @param token The JWT token for authentication at the endpoint
+     * @param stub The stub for the persistence service
      */
-    SummarizerService(std::string endpoint, std::string token);
+    SummarizerService(std::string endpoint, std::string token, std::shared_ptr<persistence::Persistence::Stub> stub);
 
     /**
      * Summarizes a given text
@@ -45,8 +46,8 @@ struct SummarizerService final : Summarizer::Service {
      * @return A grpc status
      */
     grpc::Status summarize(grpc::ServerContext *context,
-                           Prompt const *request,
-                           grpc::ServerWriter<Summary> *writer) override;
+                           summarizer::Prompt const *request,
+                           grpc::ServerWriter<summarizer::Summary> *writer) override;
 
     /**
      * Retrieves a list of the available OpenAI models
@@ -56,7 +57,7 @@ struct SummarizerService final : Summarizer::Service {
      */
     grpc::Status models(grpc::ServerContext *context,
                         google::protobuf::Empty const *request,
-                        Models *response) override;
+                        summarizer::Models *response) override;
 
     /**
      * Endpoint for checking whether the summarizer service is running
@@ -71,6 +72,7 @@ struct SummarizerService final : Summarizer::Service {
 
 private:
     OpenAI m_client;
+    std::shared_ptr<persistence::Persistence::Stub> m_persistence_stub;
 };
 
 #endif// SUMMARIZER_H

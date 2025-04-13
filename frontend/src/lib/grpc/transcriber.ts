@@ -3,21 +3,23 @@ import {
     Chunk,
     Transcript,
 } from '$lib/grpc/gen/transcriber';
-import { Empty } from '$lib/grpc/gen/google/protobuf/empty';
+import {Empty} from '$lib/grpc/gen/google/protobuf/empty';
 
-import { credentials, type ClientDuplexStream } from '@grpc/grpc-js';
+import {credentials, type ClientDuplexStream} from '@grpc/grpc-js';
 
 const TRANSCRIBER_URL = process.env.GRPC_LISTEN_ADDRESS ?? 'localhost:50051';
 const client = new TranscriberClient(TRANSCRIBER_URL, credentials.createInsecure());
 
-export type TranscribeCallback = (message: string) => void;
+export type TranscribeCallback = (id: string, message: string) => void;
 
 /**
  * Sends a stream to the gRPC transcribe service and receives transcript stream.
+ * @param userId The ID of the user
  * @param reader The video/audio readable stream reader
  * @param callback Called with transcript text as it's received
  */
 export async function transcribe(
+    userId: string,
     reader: ReadableStreamDefaultReader,
     callback: TranscribeCallback
 ): Promise<void> {
@@ -25,7 +27,7 @@ export async function transcribe(
         const call: ClientDuplexStream<Chunk, Transcript> = client.transcribe();
 
         call.on('data', (response: Transcript) => {
-            callback(response.text);
+            callback(response.id, response.text);
         });
 
         call.on('end', () => resolve());
@@ -35,14 +37,14 @@ export async function transcribe(
 
         try {
             while (true) {
-                const { done, value } = await reader.read();
+                const {done, value} = await reader.read();
                 if (done) break;
 
                 let buffer = Buffer.from(value);
                 while (buffer.length > 0) {
                     const chunk = buffer.subarray(0, Math.min(chunkSize, buffer.length));
                     buffer = buffer.subarray(chunk.length);
-                    call.write(Chunk.fromPartial({ data: chunk }));
+                    call.write(Chunk.fromPartial({userId: userId, data: chunk}));
                 }
             }
 

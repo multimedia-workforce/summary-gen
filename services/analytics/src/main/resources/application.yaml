@@ -1,0 +1,22 @@
+OPENAI_ENDPOINT: https://engelbert.ip-ddns.com/v1
+OPENAI_TOKEN: qhps7UQwMVG9zhxzq2vzHYR1YiDWd6xRptf729y16BfZ5WSmUO8mrb1lwFtQR6dr
+OPENAI_MODEL: deepseek-r1:1.5b
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/transcriptions
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+server:
+  port: 8082
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+grpc:
+  server:
+    port: 6565
+    reflection-service-enabled: true
