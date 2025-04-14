@@ -4,9 +4,6 @@ This project is an automatic summarization tool that transcribes and summarizes 
 
 ## Features To Be Implemented
 
-- [ ] OAuth login with GitHub account (elias-plank)
-- [ ] Analytics, maybe via OpenAI instance
-- [ ] Store previous transcriptions in database (needs backend and frontend)
 - [ ] User Settings like additional information that is passed to prompt
 
 ### Spring Boot Service For Persistance
@@ -32,6 +29,9 @@ Responsible Persons:
 - [x] Generate meeting summaries from transcripts
 - [x] gRPC-based communication between the backend and frontend
 - [x] SvelteKit-based web interface for user interaction
+- [x] Persistence
+- [x] Analytics backend
+- [x] Analytics frontend 
 
 Here is a preview of the current working state:
 
