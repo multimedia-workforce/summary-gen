@@ -22,15 +22,16 @@ export async function transcribe(
     userId: string,
     reader: ReadableStreamDefaultReader,
     callback: TranscribeCallback
-): Promise<void> {
+): Promise<() => void> {
     return new Promise(async (resolve, reject) => {
         const call: ClientDuplexStream<Chunk, Transcript> = client.transcribe();
 
-        call.on('data', (response: Transcript) => {
+        const onData = (response: Transcript) => {
             callback(response.id, response.text);
-        });
+        };
 
-        call.on('end', () => resolve());
+        call.on('data', onData);
+        call.on('end', () => resolve(() => call.removeListener('data', onData)));
         call.on('error', (err) => reject(err));
 
         const chunkSize = 64 * 1024;
