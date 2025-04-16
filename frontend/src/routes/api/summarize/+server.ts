@@ -1,5 +1,5 @@
-import {summarize, type Prompt} from '$lib/grpc/summarizer';
-import type {RequestHandler} from './$types';
+import { summarize, type Prompt } from '$lib/grpc/summarizer';
+import type { RequestHandler } from './$types';
 
 const ESummarizeStatus = {
     PROCESSING: 'processing',
@@ -18,14 +18,13 @@ function encode(obj: SummarizeResponse) {
     return btoa(JSON.stringify(obj)) + '\n';
 }
 
-export const POST: RequestHandler = async ({request, locals}) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
     if (!locals.user) {
-        return new Response('Unauthorized', {status: 401});
+        return new Response('Unauthorized', { status: 401 });
     }
 
     const clientRequest = (await request.json()) as Prompt;
 
-    // Inject userId from the session into the prompt
     const summarizeRequest: Prompt = {
         ...clientRequest,
         userId: locals.user.id
@@ -33,22 +32,36 @@ export const POST: RequestHandler = async ({request, locals}) => {
 
     const stream = new ReadableStream({
         async start(controller) {
-            try {
-                controller.enqueue(encode({status: ESummarizeStatus.PROCESSING}));
+            let isClosed = false;
 
-                await summarize(summarizeRequest, (text: string) => {
-                    controller.enqueue(encode({status: ESummarizeStatus.CHUNK, result: text}));
+            const safeEnqueue = (obj: SummarizeResponse) => {
+                if (isClosed) return;
+                try {
+                    controller.enqueue(encode(obj));
+                } catch (err) {
+                    console.warn('Failed to enqueue (probably already closed):', err);
+                    isClosed = true;
+                }
+            };
+
+            let unsubscribe: (() => void) | undefined;
+
+            try {
+                safeEnqueue({ status: ESummarizeStatus.PROCESSING });
+
+                unsubscribe = await summarize(summarizeRequest, (text: string) => {
+                    safeEnqueue({ status: ESummarizeStatus.CHUNK, result: text });
                 });
 
-                controller.enqueue(encode({status: ESummarizeStatus.COMPLETED}));
-                controller.close();
+                safeEnqueue({ status: ESummarizeStatus.COMPLETED });
             } catch (error) {
-                controller.enqueue(
-                    encode({
-                        status: ESummarizeStatus.ERROR,
-                        result: error instanceof Error ? error.message : String(error)
-                    })
-                );
+                safeEnqueue({
+                    status: ESummarizeStatus.ERROR,
+                    result: error instanceof Error ? error.message : String(error)
+                });
+            } finally {
+                if (unsubscribe) unsubscribe();
+                isClosed = true;
                 controller.close();
             }
         }

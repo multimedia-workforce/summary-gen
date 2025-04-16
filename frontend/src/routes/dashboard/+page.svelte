@@ -6,7 +6,6 @@
     } from "@/components/file-upload.svelte";
     import Transcribe from "@/components/transcribe.svelte";
     import Summarize from "@/components/summarize.svelte";
-    import * as Collapsible from "@/components/ui/collapsible";
 
     const { data } = $props();
     let files: Array<UploadedFile> = $state([]);
