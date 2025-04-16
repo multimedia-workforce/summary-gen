@@ -1,5 +1,5 @@
-import {transcribe} from '$lib/grpc/transcriber';
-import type {RequestHandler} from './$types';
+import { transcribe } from '$lib/grpc/transcriber';
+import type { RequestHandler } from './$types';
 
 const ETranscribeStatus = {
     PROCESSING: 'processing',
@@ -19,9 +19,9 @@ function encode(obj: TranscribeResponse) {
     return btoa(JSON.stringify(obj)) + '\n';
 }
 
-export const POST: RequestHandler = async ({request, locals}) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
     if (!locals.user) {
-        return new Response('Unauthorized', {status: 401});
+        return new Response('Unauthorized', { status: 401 });
     }
 
     const userId = locals.user.id;
@@ -29,28 +29,42 @@ export const POST: RequestHandler = async ({request, locals}) => {
     const file = formData.get('file');
 
     if (!file || !(file instanceof Blob)) {
-        return new Response('No file uploaded', {status: 400});
+        return new Response('No file uploaded', { status: 400 });
     }
 
     const reader = file.stream().getReader();
     const stream = new ReadableStream({
         async start(controller) {
+            let isClosed = false;
+
+            const safeEnqueue = (obj: TranscribeResponse) => {
+                if (isClosed) return;
+                try {
+                    controller.enqueue(encode(obj));
+                } catch (err) {
+                    console.error('Failed to enqueue:', err);
+                    isClosed = true;
+                }
+            };
+
+            let unsubscribe: (() => void) | undefined;
+
             try {
-                controller.enqueue(encode({status: ETranscribeStatus.PROCESSING}));
-                await transcribe(userId, reader, (id: string, text: string) => {
-                    controller.enqueue(
-                        encode({status: ETranscribeStatus.CHUNK, result: text, id})
-                    );
+                safeEnqueue({ status: ETranscribeStatus.PROCESSING });
+
+                unsubscribe = await transcribe(userId, reader, (id: string, text: string) => {
+                    safeEnqueue({ status: ETranscribeStatus.CHUNK, result: text, id });
                 });
-                controller.enqueue(encode({status: ETranscribeStatus.COMPLETED}));
-                controller.close();
+
+                safeEnqueue({ status: ETranscribeStatus.COMPLETED });
             } catch (error) {
-                controller.enqueue(
-                    encode({
-                        status: ETranscribeStatus.ERROR,
-                        result: error instanceof Error ? error.message : String(error)
-                    })
-                );
+                safeEnqueue({
+                    status: ETranscribeStatus.ERROR,
+                    result: error instanceof Error ? error.message : String(error)
+                });
+            } finally {
+                if (unsubscribe) unsubscribe();
+                isClosed = true;
                 controller.close();
             }
         }

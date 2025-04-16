@@ -13,15 +13,20 @@ const client = new SummarizerClient(SUMMARIZER_URL, credentials.createInsecure()
 export async function summarize(
     prompt: Prompt,
     onData: (text: string) => void
-): Promise<void> {
+): Promise<() => void> {
     return new Promise((resolve, reject) => {
         const stream: ClientReadableStream<Summary> = client.summarize(prompt);
-        stream.on('data', (response: Summary) => {
+
+        const onDataWrapper = (response: Summary) => {
             onData(response.text);
-        });
+        };
+
+        stream.on('data', onDataWrapper);
 
         stream.on('end', () => {
-            resolve();
+            resolve(() => {
+                stream.removeListener('data', onDataWrapper);
+            });
         });
 
         stream.on('error', (err) => {

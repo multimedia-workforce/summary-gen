@@ -13,15 +13,11 @@
 
     async function handleSubmit() {
         error = '';
-        console.log('🔄 Submitting', mode, { username, password });
-
         const res = await fetch(`/api/auth/${mode}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
         });
-
-        console.log(res);
 
         if (res.ok) {
             // Allow time for the cookie to be set
