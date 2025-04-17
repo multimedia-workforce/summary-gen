@@ -18,13 +18,21 @@ import java.util.*
 
 @Service
 class MetricsService(private val smartSessionRepository: SmartSessionRepository) {
-    fun getSessionMetrics(userId: UUID): SmartSessionMetrics {
+    fun getSessionMetrics(userId: UUID): SmartSessionMetrics? {
         val sessions = smartSessionRepository.findAllByUserId(userId)
+        if (sessions.isEmpty()) {
+            return null
+        }
+
         return buildSmartSessionMetrics(sessions)
     }
 
-    fun getSessionMetrics(userId: UUID, ids: List<UUID>): SmartSessionMetrics {
+    fun getSessionMetrics(userId: UUID, ids: List<UUID>): SmartSessionMetrics? {
         val sessions = smartSessionRepository.findAllById(ids).filter { it.userId == userId }
+        if (sessions.isEmpty()) {
+            return null
+        }
+
         return buildSmartSessionMetrics(sessions)
     }
 
