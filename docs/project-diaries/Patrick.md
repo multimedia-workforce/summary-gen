@@ -23,3 +23,10 @@
 ## 10.03.2025 10:00 - 12:00 (2.0h)
 - Umstellung der SmartSession Prompts auf Grpc Streams
 - Containerisierung des Analytics Service
+
+## 12.03.2025 20:00 - 22:00 (2.0h)
+- Erstellung des Auth-Systems
+
+## 17.03.2025 10:00 - 11:45 (1.75h)
+- Bug Fixes. Added analytics service docker. Added auth to analytics
+
