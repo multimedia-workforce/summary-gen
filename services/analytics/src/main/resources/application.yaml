@@ -20,3 +20,6 @@ grpc:
   server:
     port: 6565
     reflection-service-enabled: true
+jwt:
+  secret: asdhuasdyouwfoybbsfdasdhuasdyouwfoybbsfdasdhuasdyouwfoybbsfdasdhuasdyouwfoybbsfdasdhuasdyouwfoybbsfd
+  expiration: 86400000 # 1 Tag

@@ -23,6 +23,11 @@ class AnalyticsService(private val promptService: PromptService) :
                 trySend(SmartSessionPromptResponse.newBuilder().setChunk(chunk).build())
             }
 
+            if (disposable == null) {
+                close()
+                return@callbackFlow
+            }
+
             awaitClose {
                 println("Client disconnected or stream closed.")
                 disposable.dispose()

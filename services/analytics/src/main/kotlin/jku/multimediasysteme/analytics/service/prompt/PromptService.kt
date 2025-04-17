@@ -14,8 +14,9 @@ class PromptService(
         prompt: String,
         smartSessionIds: List<UUID>,
         onChunk: (String) -> Unit
-    ): Disposable {
+    ): Disposable? {
         val sessions = smartSessionRepository.findAllById(smartSessionIds)
+        if (sessions.isEmpty()) return null
 
         val mergedText = sessions.joinToString("\n---\n") {
             val transcription = it.transcription?.text ?: "[Leere Transkription]"

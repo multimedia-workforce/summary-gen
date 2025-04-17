@@ -36,6 +36,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("com.fasterxml.uuid:java-uuid-generator:4.3.0")
+    implementation("org.springframework.boot:spring-boot-starter-security")
 
     implementation("net.devh:grpc-server-spring-boot-starter:2.15.0.RELEASE")
     implementation("io.grpc:grpc-kotlin-stub:1.4.1")
@@ -47,6 +48,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
     implementation(project(":shared-jpa"))
+    implementation(project(":shared-auth"))
 }
 
 kotlin {

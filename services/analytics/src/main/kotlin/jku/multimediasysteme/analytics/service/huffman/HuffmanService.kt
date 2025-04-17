@@ -6,10 +6,13 @@ import java.util.*
 
 @Service
 class HuffmanService(private val transcriptionRepository: TranscriptionRepository) {
-    fun generateHuffmanCode(userId: UUID): Map<Char, String> {
-        val text = transcriptionRepository.findAllByUserId(userId).mapNotNull { it.text }.joinToString(" ")
+    fun generateHuffmanCode(userId: UUID): Map<Char, String>? {
+        val text = transcriptionRepository.findAllByUserId(userId)
+            .mapNotNull { it.text }
+            .joinToString(" ")
+            .takeIf { it.isNotBlank() }
 
-        return buildHuffmanCode(text)
+        return text?.let { buildHuffmanCode(it) }
     }
 
     private fun buildHuffmanCode(text: String): Map<Char, String> {
