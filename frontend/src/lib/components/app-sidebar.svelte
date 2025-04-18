@@ -22,6 +22,10 @@
                         title: "History",
                         url: "/dashboard/history",
                     },
+                    {
+                        title: "Analytics",
+                        url: "/dashboard/analytics",
+                    },
                 ],
             },
             {

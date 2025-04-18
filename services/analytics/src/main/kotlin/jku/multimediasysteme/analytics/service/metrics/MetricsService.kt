@@ -58,7 +58,7 @@ class MetricsService(private val smartSessionRepository: SmartSessionRepository)
 
     private fun buildSummaryMetrics(summaries: List<Summary>): SummaryMetrics {
         return SummaryMetrics(
-            totalTranscriptions = summaries.size,
+            totalSummaries = summaries.size,
             textStats = buildTextStats(summaries.mapNotNull { it.text }),
             createTimeStats = buildCreateTimeStats(summaries.mapNotNull { it.time }),
             activityStats = buildActivityStats(summaries.map { it.createdAt })

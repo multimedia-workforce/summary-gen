@@ -21,6 +21,7 @@ services:
       - worker
     environment:
       - PERSISTENCE_URL=http://persistence:8081
+      - ANALYTICS_URL=http://analytics:8082 
       - GRPC_HEARTBEAT_INTERVAL=10000
       - GRPC_LISTEN_ADDRESS=worker:50051
       - BODY_SIZE_LIMIT=Infinity

@@ -10,28 +10,83 @@ class PromptService(
     private val smartSessionRepository: SmartSessionRepository,
     private val deepSeekClient: DeepSeekClient
 ) {
-    suspend fun processPromptStreamed(
+    fun processPromptStreamed(
         prompt: String,
         smartSessionIds: List<UUID>,
-        onChunk: (String) -> Unit
-    ): Disposable? {
+        model: String,
+        temperature: Float,
+        onChunk: (String) -> Unit,
+        onDone: () -> Unit,
+        onError: (Throwable) -> Unit,
+        chunkSize: Int = 2000
+        ): Disposable {
         val sessions = smartSessionRepository.findAllById(smartSessionIds)
-        if (sessions.isEmpty()) return null
-
         val mergedText = sessions.joinToString("\n---\n") {
-            val transcription = it.transcription?.text ?: "[Leere Transkription]"
-            val summary = it.summary?.text ?: "[Keine Zusammenfassung]"
-            "Transkription:\n$transcription\nZusammenfassung:\n$summary"
+            val transcription = it.transcription?.text ?: "[Empty transcriptions]"
+            val summary = it.summary?.text ?: "[Empty summaries]"
+            "Transcriptions:\n$transcription\nSummaries:\n$summary"
         }
 
-        val fullPrompt = """
-        Du bist ein Assistent. Hier ist eine Sammlung von Transkriptionen:
-        ---
-        $mergedText
-        ---
-        Aufgabe: $prompt
-        """.trimIndent()
+        val blocks = mergedText.chunked(chunkSize)
+        val blockSummaries = mutableListOf<String>()
 
-        return deepSeekClient.queryStreamed(fullPrompt, onChunk)
+        var currentDisposable: Disposable? = null
+
+        fun processBlock(index: Int) {
+            if (index >= blocks.size) {
+                val finalPrompt = """
+                    You are an assistant for text analysis. Here are summaries and transcriptions:
+
+                    ${blockSummaries.withIndex().joinToString("\n---\n") { (i, s) -> "Block ${i + 1}:\n$s" }}
+
+                    Please summarize them as a whole into a full synthesis.
+                """.trimIndent()
+
+                currentDisposable = deepSeekClient.queryStreamed(
+                    prompt = finalPrompt,
+                    model = model,
+                    temperature = temperature,
+                    onChunk = onChunk,
+                    onDone = onDone,
+                    onError = onError,
+                )
+
+                return
+            }
+
+            val blockPrompt = """
+                Please summarize the following block precisely:
+
+                ${blocks[index]}
+            """.trimIndent()
+
+            val builder = StringBuilder()
+            currentDisposable = deepSeekClient.queryStreamed(
+                prompt = blockPrompt,
+                onChunk = {
+                    builder.append(it)
+                    onChunk(it)
+                },
+                onDone = {
+                    blockSummaries += builder.toString()
+                    processBlock(index + 1)
+                },
+                onError = onError,
+                model = model,
+                temperature = temperature
+            )
+        }
+
+        processBlock(0)
+
+        return object : Disposable {
+            override fun dispose() {
+                currentDisposable?.dispose()
+            }
+
+            override fun isDisposed(): Boolean {
+                return currentDisposable?.isDisposed ?: true
+            }
+        }
     }
 }
