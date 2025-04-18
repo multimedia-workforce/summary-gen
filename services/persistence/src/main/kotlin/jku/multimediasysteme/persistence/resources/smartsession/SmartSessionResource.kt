@@ -3,6 +3,7 @@ package jku.multimediasysteme.persistence.resources.smartsession
 import jku.multimediasysteme.shared.jpa.transcription.model.SmartSession
 import jku.multimediasysteme.shared.jpa.transcription.repository.SmartSessionRepository
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
@@ -12,15 +13,15 @@ class SmartSessionResource(
     private val repository: SmartSessionRepository,
 ) {
     @GetMapping
-    fun getByUser(@RequestParam userId: UUID): List<SmartSession> =
-        repository.findAllByUserId(userId)
+    fun getByUser(@AuthenticationPrincipal userId: String): List<SmartSession> =
+        repository.findAllByUserId(UUID.fromString(userId))
 
     @GetMapping("/{id}")
-    fun getByIdAndUserId(
+    fun getByUserId(
+        @AuthenticationPrincipal userId: String,
         @PathVariable id: UUID,
-        @RequestParam userId: UUID
     ): ResponseEntity<SmartSession> {
-        val session = repository.findByIdAndUserId(id, userId)
+        val session = repository.findByIdAndUserId(id, UUID.fromString(userId))
         return if (session.isPresent) {
             ResponseEntity.ok(session.get())
         } else {
@@ -30,10 +31,10 @@ class SmartSessionResource(
     
     @DeleteMapping("/{id}")
     fun deleteById(
+        @AuthenticationPrincipal userId: String,
         @PathVariable id: UUID,
-        @RequestParam userId: UUID
     ): ResponseEntity<Void> {
-        val session = repository.findByIdAndUserId(id, userId)
+        val session = repository.findByIdAndUserId(id, UUID.fromString(userId))
         return if (session.isPresent) {
             repository.delete(session.get())
             ResponseEntity.noContent().build()

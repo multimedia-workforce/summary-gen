@@ -8,10 +8,8 @@ export async function GET({params, locals}) {
         return json({error: 'Unauthorized'}, {status: 401});
     }
 
-    const userId = locals.user.id;
     const id = params.id;
-
-    const res = await fetch(`${PERSISTENCE_URL}/smartSessions/${id}?userId=${userId}`, {
+    const res = await fetch(`${PERSISTENCE_URL}/smartSessions/${id}`, {
         headers: {
             Authorization: `Bearer ${locals.jwt}`
         }
