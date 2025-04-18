@@ -37,10 +37,7 @@ export async function POST({request, locals}) {
         body: JSON.stringify(await request.json())
     });
 
-    console.log(res);
-
     if (!res.ok) {
-        console.log(res.status);
         const error = await res.text();
         return json({error: error || 'Failed to fetch huffman'}, {status: res.status});
     }

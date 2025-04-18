@@ -18,7 +18,7 @@ springdoc:
 
 grpc:
   server:
-    port: 6565
+    port: 50052
     reflection-service-enabled: true
 jwt:
   secret: asdhuasdyouwfoybbsfdasdhuasdyouwfoybbsfdasdhuasdyouwfoybbsfdasdhuasdyouwfoybbsfdasdhuasdyouwfoybbsfd
