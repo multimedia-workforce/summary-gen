@@ -14,6 +14,7 @@
 
     import MetricsView from "@/components/metrics-view.svelte";
     import HuffmanView from "@/components/huffman-view.svelte";
+    import OverallSummaryView from "@/components/overall-summary-view.svelte";
 
     let sessions: SmartSession[] = $state([]);
     let selectedSessionIds: string[] = $state([]);
@@ -96,53 +97,65 @@
         <p class="text-muted-foreground">Perform text analysis on your previous smart sessions.</p>
     </div>
 
-    <Card.Root>
-        <Card.Header>
-            <Card.Title>Available Smart Sessions</Card.Title>
-            <Card.Description>Toggle selection to update analytics</Card.Description>
-        </Card.Header>
-        <Card.Content>
-            <ScrollArea class="h-[33vh]">
-                <Table.Root>
-                    <Table.Header>
-                        <Table.Row>
-                            <Table.Head class="w-[5%]">
-                                <input
-                                        checked={isAllSelected()}
-                                        onchange={toggleSelectAll}
-                                        type="checkbox"
-                                        use:setIndeterminate={isSomeSelected()}
-                                />
-                            </Table.Head>
-                            <Table.Head class="w-[5%]">#</Table.Head>
-                            <Table.Head class="w-[30%]">Transcript</Table.Head>
-                            <Table.Head class="w-[45%]">Summary</Table.Head>
-                            <Table.Head class="w-[20%]">Date</Table.Head>
-                        </Table.Row>
-                    </Table.Header>
-                    <Table.Body>
-                        {#each sessions as session, i}
+    <div class="grid grid-cols-2 gap-4 h-[42vh]">
+        <Card.Root>
+            <Card.Header>
+                <Card.Title>Available Smart Sessions</Card.Title>
+                <Card.Description>Toggle selection to update analytics</Card.Description>
+            </Card.Header>
+            <Card.Content>
+                <ScrollArea class="h-[33vh]">
+                    <Table.Root>
+                        <Table.Header>
                             <Table.Row>
-                                <Table.Cell>
+                                <Table.Head class="w-[5%]">
                                     <input
+                                            checked={isAllSelected()}
+                                            onchange={toggleSelectAll}
                                             type="checkbox"
-                                            checked={isSelected(session.id)}
-                                            onchange={() => toggleSelection(session.id)}
+                                            use:setIndeterminate={isSomeSelected()}
                                     />
-                                </Table.Cell>
-                                <Table.Cell class="font-mono text-sm text-muted-foreground">{i + 1}</Table.Cell>
-                                <Table.Cell>{truncate(session.transcription?.text)}</Table.Cell>
-                                <Table.Cell>{truncate(session.summary?.text)}</Table.Cell>
-                                <Table.Cell>
-                                    {format(new Date(session.createdAt), 'yyyy-MM-dd HH:mm')}
-                                </Table.Cell>
+                                </Table.Head>
+                                <Table.Head class="w-[5%]">#</Table.Head>
+                                <Table.Head class="w-[30%]">Transcript</Table.Head>
+                                <Table.Head class="w-[45%]">Summary</Table.Head>
+                                <Table.Head class="w-[20%]">Date</Table.Head>
                             </Table.Row>
-                        {/each}
-                    </Table.Body>
-                </Table.Root>
-            </ScrollArea>
-        </Card.Content>
-    </Card.Root>
+                        </Table.Header>
+                        <Table.Body>
+                            {#each sessions as session, i}
+                                <Table.Row>
+                                    <Table.Cell>
+                                        <input
+                                                type="checkbox"
+                                                checked={isSelected(session.id)}
+                                                onchange={() => toggleSelection(session.id)}
+                                        />
+                                    </Table.Cell>
+                                    <Table.Cell class="font-mono text-sm text-muted-foreground">{i + 1}</Table.Cell>
+                                    <Table.Cell>{truncate(session.transcription?.text)}</Table.Cell>
+                                    <Table.Cell>{truncate(session.summary?.text)}</Table.Cell>
+                                    <Table.Cell>
+                                        {format(new Date(session.createdAt), 'yyyy-MM-dd HH:mm')}
+                                    </Table.Cell>
+                                </Table.Row>
+                            {/each}
+                        </Table.Body>
+                    </Table.Root>
+                </ScrollArea>
+            </Card.Content>
+        </Card.Root>
+        <Card.Root>
+            <Card.Header>
+                <Card.Title>Overall Summary Prompt</Card.Title>
+                <Card.Description>Generate a summary of multiple smart sessions using AI</Card.Description>
+            </Card.Header>
+            <Card.Content>
+                <OverallSummaryView smartSessionIds={selectedSessionIds}/>
+            </Card.Content>
+        </Card.Root>
+    </div>
+
     <div class="grid grid-cols-2 gap-4 h-[42vh]">
         <Card.Root>
             <Card.Header>

@@ -22,6 +22,7 @@ services:
     environment:
       - PERSISTENCE_URL=http://persistence:8081
       - ANALYTICS_URL=http://analytics:8082 
+      - ANALYTICS_GRPC_URL=analytics:50052
       - GRPC_HEARTBEAT_INTERVAL=10000
       - GRPC_LISTEN_ADDRESS=worker:50051
       - BODY_SIZE_LIMIT=Infinity
@@ -47,6 +48,7 @@ services:
         SERVICE_NAME: analytics
     ports:
       - '8082:8082'
+      - '50052:50052'
     depends_on:
       - postgres
 

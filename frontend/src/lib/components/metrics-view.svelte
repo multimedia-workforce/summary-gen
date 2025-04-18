@@ -19,7 +19,7 @@
 
     const {metrics}: Props = $props();
 
-    let heatmapCanvas: HTMLCanvasElement;
+    let heatmapCanvas: HTMLCanvasElement | undefined = $state(undefined);
     let heatmapChart: ChartJS;
 
     function formatFloat(value: number): string {
@@ -27,7 +27,7 @@
     }
 
     onMount(() => {
-        if (metrics.dailyHeatmap?.length > 0 && heatmapCanvas) {
+        if (metrics.dailyHeatmap?.length !== undefined && metrics.dailyHeatmap?.length > 0 && heatmapCanvas) {
             const labels = metrics.dailyHeatmap.map(cell => cell.date);
             const counts = metrics.dailyHeatmap.map(cell => cell.count);
 
@@ -88,7 +88,7 @@
             </ul>
         </div>
     {/if}
-    
+
     {#if metrics.dailyHeatmap?.length !== undefined && metrics.dailyHeatmap?.length > 0}
         <div>
             <h3 class="font-semibold mb-1">Heatmap</h3>

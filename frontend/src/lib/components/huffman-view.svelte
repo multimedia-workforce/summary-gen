@@ -21,7 +21,7 @@
     };
 
     const {huffman}: Props = $props();
-    let canvas: HTMLCanvasElement;
+    let canvas: HTMLCanvasElement | undefined = $state(undefined);
     let chart: ChartJS | undefined;
 
     onMount(() => {
