@@ -1,14 +1,27 @@
 package jku.multimediasysteme.analytics.service.huffman
 
+import jku.multimediasysteme.shared.jpa.transcription.repository.SmartSessionRepository
 import jku.multimediasysteme.shared.jpa.transcription.repository.TranscriptionRepository
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
-class HuffmanService(private val transcriptionRepository: TranscriptionRepository) {
+class HuffmanService(
+    private val smartSessionRepository: SmartSessionRepository
+) {
     fun generateHuffmanCode(userId: UUID): Map<Char, String>? {
-        val text = transcriptionRepository.findAllByUserId(userId)
-            .mapNotNull { it.text }
+        val text = smartSessionRepository.findAllByUserId(userId)
+            .mapNotNull { it.transcription?.text }
+            .joinToString(" ")
+            .takeIf { it.isNotBlank() }
+
+        return text?.let { buildHuffmanCode(it) }
+    }
+
+    fun generateHuffmanCodes(userId: UUID, ids: List<UUID>): Map<Char, String>? {
+        val text = smartSessionRepository.findAllById(ids)
+            .filter { it.userId == userId }
+            .mapNotNull { it.transcription?.text }
             .joinToString(" ")
             .takeIf { it.isNotBlank() }
 

@@ -5,18 +5,18 @@ package analytics;
 option java_multiple_files = true;
 option java_package = "jku.multimediasysteme.grpc.analytics";
 
-import "google/protobuf/empty.proto";
-
 message SmartSessionPromptRequest {
-  string prompt = 1;
-  repeated string smartSessionIds = 2;
+    string userId = 1;
+    string model = 2;
+    string prompt = 3;
+    float temperature = 4;
+    repeated string smartSessionIds = 5;
 }
 
 message SmartSessionPromptResponse {
     string chunk = 1;
 }
 
-service AnalyticsService {
+service Analytics {
     rpc handleSmartSessionPrompt (SmartSessionPromptRequest) returns (stream SmartSessionPromptResponse);
-  }
-  
+}

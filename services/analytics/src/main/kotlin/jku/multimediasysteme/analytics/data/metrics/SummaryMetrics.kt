@@ -5,7 +5,7 @@ import jku.multimediasysteme.analytics.data.metrics.stats.CreateTimeStats
 import jku.multimediasysteme.analytics.data.metrics.stats.TextStats
 
 data class SummaryMetrics(
-    val totalTranscriptions: Int,
+    val totalSummaries: Int,
     val textStats: TextStats,
     val createTimeStats: CreateTimeStats,
     val activityStats: ActivityStats,

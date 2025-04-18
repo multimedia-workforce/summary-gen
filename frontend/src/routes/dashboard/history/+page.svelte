@@ -33,7 +33,7 @@
                 <Table.Head class="w-[5%]">#</Table.Head>
                 <Table.Head class="w-[30%]">Transcript</Table.Head>
                 <Table.Head class="w-[30%]">Summary</Table.Head>
-                <Table.Head class="w-[20%] text-right">Date</Table.Head>
+                <Table.Head class="w-[20%]">Date</Table.Head>
                 <Table.Head class="w-[15%] text-right">Action</Table.Head>
             </Table.Row>
         </Table.Header>
@@ -43,7 +43,7 @@
                     <Table.Cell class="font-mono text-sm text-muted-foreground">{i + 1}</Table.Cell>
                     <Table.Cell>{truncate(session.transcription?.text)}</Table.Cell>
                     <Table.Cell>{truncate(session.summary?.text)}</Table.Cell>
-                    <Table.Cell class="text-right">
+                    <Table.Cell>
                         {format(new Date(session.createdAt), 'yyyy-MM-dd HH:mm')}
                     </Table.Cell>
                     <Table.Cell class="text-right">
