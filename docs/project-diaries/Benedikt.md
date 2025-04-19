@@ -27,6 +27,6 @@
 - Refactoring
 - Alles funktioniert nun
   
-## 17-04.2025: 14:05 - 19:30
+## 17.04.2025: 14:05 - 19:30
 - Versuch der Integration der überarbeiteten API
 - Start des Analytics Containers nicht mehr möglich
