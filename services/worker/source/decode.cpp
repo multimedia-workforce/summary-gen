@@ -249,11 +249,5 @@ Result<std::vector<f32>> decode_pcm32(std::vector<u8> const &buffer) {
     avcodec_free_context(&codec_ctx);
     avformat_close_input(&fmt_ctx);
 
-    // Debug: dump raw PCM float32 samples to file
-    {
-        std::ofstream dump("output.raw", std::ios::binary);
-        dump.write(reinterpret_cast<const char *>(pcm_data.data()), pcm_data.size() * sizeof(f32));
-    }
-
     return pcm_data;
 }
