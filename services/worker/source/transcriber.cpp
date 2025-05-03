@@ -31,6 +31,10 @@
 
 namespace {
 
+constexpr auto SAMPLE_RATE = 16000;
+constexpr auto CHUNK_DURATION = 30;
+constexpr auto CHUNK_SIZE = SAMPLE_RATE * CHUNK_DURATION;
+
 struct TranscribeContext {
     std::string transcription_id;
     std::string user_id;
@@ -112,16 +116,6 @@ grpc::Status TranscriberService::transcribe(
 
     spdlog::info("Finished reading transcribe request");
 
-    auto const transcription_id = utils::UUID::generate_v4();
-    TranscribeContext transcribe_context{ .transcription_id = transcription_id,
-                                          .user_id = chunk.userid(),
-                                          .stream = stream,
-                                          .persistence_writer = persist_writer.get() };
-
-    auto params = whisper_full_default_params(WHISPER_SAMPLING_BEAM_SEARCH);
-    params.new_segment_callback_user_data = &transcribe_context;
-    params.new_segment_callback = handle_segment;
-
     const std::string input_video = data_stream.str();
     const auto decoded = decode_pcm32({ input_video.begin(), input_video.end() });
 
@@ -136,10 +130,32 @@ grpc::Status TranscriberService::transcribe(
         return grpc::Status{ grpc::StatusCode::UNAVAILABLE, "Failed to retrieve PCM32 samples" };
     }
 
+    spdlog::info("Decoded {} PCM samples", decoded->size());
+
+    auto const transcription_id = utils::UUID::generate_v4();
+    TranscribeContext transcribe_context{ .transcription_id = transcription_id,
+                                          .user_id = chunk.userid(),
+                                          .stream = stream,
+                                          .persistence_writer = persist_writer.get() };
+
+    auto params = whisper_full_default_params(WHISPER_SAMPLING_BEAM_SEARCH);
+    params.new_segment_callback_user_data = &transcribe_context;
+    params.new_segment_callback = handle_segment;
+
+    // Setting the language to nullptr leads to auto-detect
+    params.language = nullptr;
+    params.translate = false;
+
     auto context_lock = m_context->lock();
-    if (whisper_full(context_lock->get(), params, decoded->data(), static_cast<int>(decoded->size())) != 0) {
-        spdlog::error("Failed to transcribe audio");
-        return grpc::Status{ grpc::StatusCode::UNAVAILABLE, "Failed to transcribe audio" };
+    for (size_t i = 0; i < decoded->size(); i += CHUNK_SIZE) {
+        auto const len = std::min(static_cast<size_t>(CHUNK_SIZE), decoded->size() - i);
+
+        if (whisper_full(context_lock->get(), params, decoded->data() + i, static_cast<int>(len)) != 0) {
+            spdlog::error("Failed to transcribe chunk at offset {} ({} samples)", i, len);
+            return grpc::Status{ grpc::StatusCode::UNAVAILABLE, "Failed to transcribe audio chunk" };
+        }
+
+        spdlog::debug("Transcribed chunk {} ({} samples)", i / CHUNK_SIZE, len);
     }
 
     spdlog::info("Transcribe OK.");
