@@ -1,7 +1,7 @@
 //
 // MIT License
 //
-// Copyright (c) 2024 Elias Engelbert Plank
+// Copyright (c) 2025 multimedia-workforce
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,15 +28,19 @@
 
 namespace utils {
 
-/// Helper struct that acts as a tag to find the correct operator | overload
+/**
+ * Helper struct that acts as a tag to find the correct operator | overload
+ */
 namespace detail {
 template<typename Container>
 struct CollectHelper { };
 
-/// This operator | overload actually collects the range into the container
-/// @tparam Container the container type
-/// @tparam Range the range type
-/// @param r The range
+/**
+ * This operator | overload actually collects the range into the container
+ * @tparam Container the container type
+ * @tparam Range the range type
+ * @param r The range
+ */
 template<typename Container, std::ranges::range Range>
     requires std::convertible_to<std::ranges::range_value_t<Range>, typename Container::value_type>
 auto operator|(Range &&r, CollectHelper<Container>) {
@@ -45,9 +49,11 @@ auto operator|(Range &&r, CollectHelper<Container>) {
 
 }// namespace detail
 
-/// Collects a range to the specified container
-/// @tparam Container the container type
-/// @returns The container filled with the ranges elements
+/**
+ * Collects a range to the specified container
+ * @tparam Container the container type
+ * @returns The container filled with the ranges elements
+ */
 template<std::ranges::range Container>
     requires(not std::ranges::view<Container>)
 auto collect() {

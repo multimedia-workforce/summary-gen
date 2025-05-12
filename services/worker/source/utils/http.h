@@ -1,7 +1,7 @@
 //
 //  MIT License
 //
-//  Copyright (c) 2025 Elias Engelbert Plank
+//  Copyright (c) 2025 multimedia-workforce
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -25,13 +25,16 @@
 #define UTILS_HTTP_H
 
 #include <curl/curl.h>
+#include <tl/expected.hpp>
 
 #include <format>
 #include <memory>
 #include <string_view>
 
 #include "../types.h"
+#include "fmt.h"
 #include "json.h"
+
 
 namespace utils::http {
 
@@ -87,7 +90,7 @@ public:
                 ResponseType parsed = nlohmann::json::parse(response);
                 return parsed;
             } catch (const std::exception &e) {
-                return tl::unexpected(std::format("Failed to parse response: {}", e.what()));
+                return unexpected_format("Failed to parse response: {}", e.what());
             }
         });
     }

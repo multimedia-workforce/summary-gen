@@ -1,7 +1,7 @@
 //
 //  MIT License
 //
-//  Copyright (c) 2025 Elias Engelbert Plank
+//  Copyright (c) 2025 multimedia-workforce
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,9 @@
 
 /**
  * Decodes the given buffer to pcm32
- * @param buffer The input buffer, may be a video/audio file
+ * @param buffer The input buffer, which may be a video/audio file
  * @return PCM32 samples in float format
  */
-Result<std::vector<f32>> decode_pcm32(std::vector<u8> const &buffer);
+[[nodiscard]] Result<std::vector<f32>> decode_pcm32(std::vector<u8> const &buffer);
 
 #endif// DECODE_H

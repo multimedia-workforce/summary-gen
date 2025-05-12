@@ -1,7 +1,7 @@
 //
 //  MIT License
 //
-//  Copyright (c) 2025 Elias Engelbert Plank
+//  Copyright (c) 2025 multimedia-workforce
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,10 @@
 
 #include <whisper.h>
 
+/**
+ * The TranscriberService defines a gRPC service in order for the
+ * other services to perform transcription.
+ */
 struct TranscriberService final : transcriber::Transcriber::Service {
     /**
      * Instantiates a new transcriber service

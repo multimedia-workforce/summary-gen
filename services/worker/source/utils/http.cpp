@@ -1,7 +1,7 @@
 //
 //  MIT License
 //
-//  Copyright (c) 2025 Elias Engelbert Plank
+//  Copyright (c) 2025 multimedia-workforce
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -53,12 +53,12 @@ size_t http_post_write_stream(char const *ptr, size_t const size, size_t const n
         ctx->buffer.erase(0, pos + 1);
 
         // Remove carriage return if present
-        if (!line.empty() && line.back() == '\r')
+        if (not line.empty() and line.back() == '\r') {
             line.pop_back();
+        }
 
         if (line.starts_with("data: ")) {
-            std::string json = line.substr(6);
-            if (!json.empty() && json != "[DONE]") {
+            if (auto const json = line.substr(6); not json.empty() and json != "[DONE]") {
                 ctx->callback(json);
             }
         }
@@ -86,8 +86,9 @@ Client::Client(std::string endpoint, std::string token) : m_endpoint(std::move(e
 
 Result<std::string> Client::authorized_get(std::string_view path) const {
     auto const handle = Handle{ curl_easy_init(), curl_easy_cleanup };
-    if (!handle)
+    if (not handle) {
         return tl::unexpected("Failed to init CURL");
+    }
 
     auto const url = std::format("{}/v1/{}", m_endpoint, path);
     std::string response;
@@ -105,7 +106,7 @@ Result<std::string> Client::authorized_get(std::string_view path) const {
     curl_easy_setopt(handle.get(), CURLOPT_ERRORBUFFER, error_buffer.data());
 
     if (auto const res = curl_easy_perform(handle.get()); res != CURLE_OK) {
-        return tl::unexpected(std::format("CURL error: {}", error_buffer));
+        return unexpected_format("CURL error: {}", error_buffer);
     }
 
     return response;
@@ -113,8 +114,9 @@ Result<std::string> Client::authorized_get(std::string_view path) const {
 
 Result<void> Client::authorized_post_stream(std::string_view path, std::string_view body, ServerSentEvent callback) {
     auto const handle = Handle{ curl_easy_init(), curl_easy_cleanup };
-    if (!handle)
+    if (not handle) {
         return tl::unexpected("Failed to init CURL");
+    }
 
     auto const url = std::format("{}/v1/{}", m_endpoint, path);
     std::string error_buffer(CURL_ERROR_SIZE, '\0');
@@ -138,7 +140,7 @@ Result<void> Client::authorized_post_stream(std::string_view path, std::string_v
     curl_easy_setopt(handle.get(), CURLOPT_ERRORBUFFER, error_buffer.data());
 
     if (auto const res = curl_easy_perform(handle.get()); res != CURLE_OK) {
-        return tl::unexpected(std::format("CURL error: {}", error_buffer));
+        return unexpected_format("CURL error: {}", error_buffer);
     }
     return {};
 }
