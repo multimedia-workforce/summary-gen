@@ -6,7 +6,7 @@ import {
 
 import {credentials, type ClientReadableStream} from "@grpc/grpc-js";
 
-const ANALYTICS_URL = process.env.ANALYTICS_GRPC_URL ?? "localhost:50052";
+const ANALYTICS_URL = process.env.ANALYTICS_GRPC_URL ?? "localhost:50053";
 const client = new AnalyticsClient(ANALYTICS_URL, credentials.createInsecure());
 
 export async function smartSessionPrompt(
