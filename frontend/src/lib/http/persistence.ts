@@ -34,3 +34,18 @@ export async function fetchSmartSession(id: string): Promise<SmartSession> {
             .catch(reject);
     });
 }
+
+/**
+ * Calls the server-side API handler for deleting smart sessions
+ * @param id The ID of the smart session
+ * @return A promise that indicates success
+ */
+export async function deleteSmartSession(id: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+        return fetch(`/api/persistence/${id}`, {
+                method: 'DELETE'
+            })
+            .then(() => resolve())
+            .catch(reject);
+    });
+}
