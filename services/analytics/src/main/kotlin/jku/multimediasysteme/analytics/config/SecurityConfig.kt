@@ -1,4 +1,4 @@
-package jku.multimediasysteme.persistence.config
+package jku.multimediasysteme.analytics.config
 
 import jku.multimediasysteme.shared.auth.JwtAuthenticationFilter
 import org.springframework.context.annotation.Bean
@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
@@ -27,24 +26,15 @@ class SecurityConfig(private val jwtAuthenticationFilter: JwtAuthenticationFilte
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         return http
-            .csrf { it.disable() } // Disable CSRF protection for API
-            .authorizeHttpRequests {
-                it.requestMatchers("/auth/**").permitAll() // Public access to auth endpoints
-                    .anyRequest().authenticated() // All other endpoints require auth
+            .csrf { it.disable() }  // Disable CSRF protection for API
+            .authorizeHttpRequests { it.anyRequest().authenticated() } // Require authentication for all endpoints
+            .sessionManagement {
+                it.sessionCreationPolicy(SessionCreationPolicy.STATELESS)  // Don't store sessions on server
             }
-            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) } // No HTTP session
             .addFilterBefore(
                 jwtAuthenticationFilter,
                 UsernamePasswordAuthenticationFilter::class.java
-            ) // Add JWT filter
+            ) // Insert JWT validation before Spring's default auth filter
             .build()
     }
-
-    /**
-     * Provides a password encoder using BCrypt hashing.
-     *
-     * @return the password encoder bean
-     */
-    @Bean
-    fun passwordEncoder() = BCryptPasswordEncoder()
 }
