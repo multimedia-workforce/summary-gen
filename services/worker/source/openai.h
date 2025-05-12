@@ -1,7 +1,7 @@
 //
 //  MIT License
 //
-//  Copyright (c) 2025 Elias Engelbert Plank
+//  Copyright (c) 2025 multimedia-workforce
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -35,21 +35,38 @@
 
 #include "utils/http.h"
 
+/**
+ * Defines the Message DTO for the OpenAI API
+ */
 struct Message {
     std::string content;
     std::string role;
 
+    /**
+     * Builds a message with the developer role
+     * @param content The content of the message
+     * @return A developer message
+     */
     static Message developer(std::string content) {
         return { std::move(content), "developer" };
     }
 
+    /**
+     * Builds a message with the user role
+     * @param content The content of the message
+     * @return A developer message
+     */
     static Message user(std::string content) {
         return { std::move(content), "user" };
     }
 };
 
+// Defines the nlohmann::json conversion functions for the Message DTO
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Message, content, role);
 
+/**
+ * Defines the CompletionRequest DTO for the OpenAI API
+ */
 struct CompletionRequest {
     std::string model;
     std::vector<Message> messages;
@@ -59,6 +76,7 @@ struct CompletionRequest {
 
 using CompletionCallback = std::function<void(std::string)>;
 
+// Defines the nlohmann::json conversion functions for the CompletionRequest DTO
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CompletionRequest, model, messages, temperature, stream);
 
 struct OpenAI {
@@ -75,13 +93,13 @@ struct OpenAI {
      * @param callback The callback used for completions
      * @return The result
      */
-    Result<void> completion(CompletionRequest const &request, CompletionCallback const &callback);
+    [[nodiscard]] Result<void> completion(CompletionRequest const &request, CompletionCallback const &callback);
 
     /**
      * Request the available models
      * @return A list of available models
      */
-    Result<std::vector<std::string>> models() const;
+    [[nodiscard]] Result<std::vector<std::string>> models() const;
 
     std::string endpoint;
     std::string token;

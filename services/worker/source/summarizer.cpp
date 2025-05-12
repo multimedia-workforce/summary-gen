@@ -1,7 +1,7 @@
 //
 //  MIT License
 //
-//  Copyright (c) 2025 Elias Engelbert Plank
+//  Copyright (c) 2025 multimedia-workforce
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@
 #include "utils/continuation.h"
 #include "utils/uuid.h"
 
+// This message is passed to the OpenAI instance as a developer suggestion to the model
 constexpr auto COMPLETION_DEV_MESSAGE = R"(
 Summarize this meeting transcription with **maximum accuracy and clarity**. The summary **must** include:
 
@@ -52,10 +53,14 @@ grpc::Status SummarizerService::summarize(grpc::ServerContext *context,
                                           grpc::ServerWriter<summarizer::Summary> *writer) {
     spdlog::info("Incoming summarize request");
 
+    // Initialize the client context required to perform calls to the gRPC persistence service
     grpc::ClientContext persist_context;
     google::protobuf::Empty persist_response;
 
+    // Initialize the client writer required to perform calls to the gRPC persistence service
     auto persist_writer = m_persistence_stub->persistSummary(&persist_context, &persist_response);
+
+    // This continuation makes sure that the writer is properly dealt with, no matter what happens via RAII
     auto persist_finish = utils::Continuation{ [&persist_writer] {
         if (not persist_writer) {
             return;
@@ -65,35 +70,44 @@ grpc::Status SummarizerService::summarize(grpc::ServerContext *context,
         persist_writer->Finish();
     } };
 
-    if (!persist_writer) {
+    if (not persist_writer) {
         spdlog::error("Cannot persist transcription, unable to establish connection!");
     }
 
-    auto const summaryId = utils::UUID::generate_v4();
+    // Generate a summary ID for correlation
+    auto const summary_id = utils::UUID::generate_v4();
 
+    // Prepare the completion request to pass to the OpenAI instance
     CompletionRequest completion_request;
     completion_request.model = request->model();
     completion_request.temperature = request->temperature();
     completion_request.messages = { Message::developer(COMPLETION_DEV_MESSAGE),
                                     Message::user(std::format("{}: {}", request->prompt(), request->transcript())) };
 
-    auto const result =
-            m_client.completion(completion_request, [request, writer, &persist_writer, summaryId](std::string message) {
-                spdlog::debug("Received summary chunk of size {}", message.size());
+    // Perform the actual completion call with our custom callback
+    auto const result = m_client.completion(completion_request,
+                                            [request, writer, &persist_writer, summary_id](std::string message) {
+                                                spdlog::debug("Received summary chunk of size {}", message.size());
 
-                summarizer::Summary summary;
-                summary.set_text(message);
-                writer->Write(summary);
+                                                // Prepare the summary chunk and configure the message
+                                                summarizer::Summary summary;
+                                                summary.set_text(message);
+                                                writer->Write(summary);
 
-                persistence::Chunk persistence_chunk;
-                persistence_chunk.set_transcriptid(request->transcriptid());
-                persistence_chunk.set_summaryid(summaryId);
-                persistence_chunk.set_userid(request->userid());
-                persistence_chunk.set_text(message);
-                persistence_chunk.set_time(std::time(nullptr));
-                persist_writer->Write(persistence_chunk);
-            });
+                                                // If the persistence writer is configured, write the chunk to
+                                                // persistence
+                                                if (persist_writer) {
+                                                    persistence::Chunk persistence_chunk;
+                                                    persistence_chunk.set_transcriptid(request->transcriptid());
+                                                    persistence_chunk.set_summaryid(summary_id);
+                                                    persistence_chunk.set_userid(request->userid());
+                                                    persistence_chunk.set_text(message);
+                                                    persistence_chunk.set_time(std::time(nullptr));
+                                                    persist_writer->Write(persistence_chunk);
+                                                }
+                                            });
 
+    // If the completion call failed, return an error to the caller
     if (not result) {
         spdlog::error("Failed to summarize: {}", result.error());
         return grpc::Status{ grpc::StatusCode::UNAVAILABLE, result.error() };
@@ -107,12 +121,17 @@ grpc::Status SummarizerService::models(grpc::ServerContext *context,
                                        google::protobuf::Empty const *request,
                                        summarizer::Models *response) {
     spdlog::info("Incoming models request");
+
+    // Asks the OpenAI instance for the available models
     auto const result = m_client.models();
+
+    // If the result is not successful, return the error to the user
     if (not result) {
         spdlog::error("Failed to retrieve models: {}", result.error());
         return grpc::Status{ grpc::StatusCode::UNAVAILABLE, result.error() };
     }
 
+    // Build the gRPC response
     std::ranges::for_each(*result, [response](auto &&model) { response->add_models(model); });
 
     spdlog::info("Models OK.");
