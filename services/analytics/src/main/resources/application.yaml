@@ -18,8 +18,8 @@ springdoc:
 
 grpc:
   server:
-    port: 50052
+    port: 50053
     reflection-service-enabled: true
 jwt:
-  secret: asdhuasdyouwfoybbsfdasdhuasdyouwfoybbsfdasdhuasdyouwfoybbsfdasdhuasdyouwfoybbsfdasdhuasdyouwfoybbsfd
+  secret: b2c973b295174fadbbf36d98460c5a8a4ddf47173dc8b7d85a1b728d3e6e4e2b
   expiration: 86400000 # 1 Tag
