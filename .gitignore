@@ -4,6 +4,7 @@ services/worker/models
 samples/
 build/
 .cache/
+.env
 # === Gradle ===
 .gradle/
 build/

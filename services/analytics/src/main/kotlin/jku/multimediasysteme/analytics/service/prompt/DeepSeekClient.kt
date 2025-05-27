@@ -12,9 +12,11 @@ import reactor.core.Disposable
  */
 @Component
 class DeepSeekClient(
-    @Value("\${OPENAI_ENDPOINT}") private val endpoint: String,
-    @Value("\${OPENAI_TOKEN}") private val apiToken: String
+    @Value("\${OPENAI_ENDPOINT}") private val endpoint: String
 ) {
+    private val apiToken: String = System.getenv("OPENAI_TOKEN")
+        ?: throw IllegalStateException("Environment variable OPENAI_TOKEN is not set")
+
     // Reactive WebClient configured with base URL and headers
     private val webClient = WebClient.builder()
         .baseUrl(endpoint)

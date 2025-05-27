@@ -28,20 +28,12 @@ Here is a preview of the current working state:
 
 ## Installation
 
-> **Note**: Setting up an OpenAI instance can be skipped, I configured an [Ollama](https://ollama.com) instance with `deepseek-r1:1.5b` and `deepseek-r1:14b` models on my Oracle VM at https://engelbert.ip-ddns.com. This is already configured in the `compose.yml`.
+Setting up an OpenAI instance can be skipped, I configured an [Ollama](https://ollama.com) instance with `deepseek-r1:1.5b` and `deepseek-r1:14b` models on my Oracle VM at https://engelbert.ip-ddns.com. This is already configured in the `compose.yml`. One piece of configuration is still necessary:
 
-The recommended approach is running the meeting summary tool as a docker compose project. When using the docker compose project, the only thing that needs to be configured is the OpenAI instance that will be used for the summary generation. This can be configured inside the [compose.yaml](./compose.yaml) by altering the `worker` service:
+1. Create an `.env` file in the root of the repository
+2. Add a variable `OPENAI_TOKEN` with a valid token for the configured instance
 
-```yaml
-services:
-  worker:
-    ...
-    environment:
-      - OPENAI_ENDPOINT=http://host.docker.internal:11434
-      - OPENAI_TOKEN=""
-```
-
-As specified above, the default endpoint is `host.docker.internal:11434`, which just points to the host that runs docker. This configuration works with OpenAI instances that are self-hosted (e.g. via [Ollama](https://ollama.com/)) on the host machine. Alternatives to that are:
+ Alternatives to the preconfigured instance are:
 
  -  Using the official [OpenAI](https://api.openai.com/) or the [DeepSeek](https://api.deepseek.com) API. **Note that this will probably result in costs for you, as these official APIs charge a price per query/tokens**.
  - Using a self-hosted OpenAI instance that runs somewhere else. In this case you just need to set the `OPENAI_ENDPOINT` variable to the host that runs your instance.

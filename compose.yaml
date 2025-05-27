@@ -49,6 +49,8 @@ services:
     ports:
       - '8082:8082'
       - '50053:50053'
+    env_file:
+      - .env
     depends_on:
       - postgres
 
@@ -60,8 +62,9 @@ services:
       - GRPC_LISTEN_ADDRESS=0.0.0.0:50051
       - GRPC_PERSISTENCE_ADDRESS=persistence:50052
       - OPENAI_ENDPOINT=https://engelbert.ip-ddns.com
-      - OPENAI_TOKEN=REDACTED
       - SPDLOG_DEBUG=true
+    env_file:
+      - .env
     ports:
       - '443:443'
       - '50051:50051'
