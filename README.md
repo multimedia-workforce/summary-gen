@@ -1,27 +1,6 @@
-# Summary Generation
+# Smart Session Summary
 
 This project is an automatic summarization tool that transcribes and summarizes video/audio recordings using [whisper.cpp](https://github.com/ggerganov/whisper.cpp). The summary generation can be performed by an arbitrary OpenAI instance (e.g. self-hosted). It processes media files using `ffmpeg`, transcribes them with `whisper`, and summarizes them with the configured OpenAI instance. The frontend interface is built using SvelteKit and communicates with the backend via `gRPC`.
-
-## Features To Be Implemented
-
-- [ ] User Settings like additional information that is passed to prompt
-
-### Spring Boot Service For Persistance
-
-The spring boot service should offer REST endpoints for storing and retrieving generated transcripts/summaries. It should also provide REST endpoints for configuring user settings, like additional information that should be provided to the OpenAI instance when a summary is generated. Also maybe the ability to configure the url of the OpenAI instance, at the moment it is hardcoded in the docker compose file.
-
-Responsible Persons:
- - Fabian: backend
- - MBlaim: frontend
- - DefinedSpace: both? for settings
-
-### Spring Boot Service For Analytics
-
-The spring boot service should offer REST endpoints for analysing previous transcriptions/summaries, maybe some statitics. 
-
-Responsible Persons:
- - Patrick: backend
- - Benedikt: frontend
 
 ## Features
 
@@ -31,11 +10,21 @@ Responsible Persons:
 - [x] SvelteKit-based web interface for user interaction
 - [x] Persistence
 - [x] Analytics backend
-- [x] Analytics frontend 
+- [x] Analytics frontend
 
 Here is a preview of the current working state:
 
-![preview](docs/preview.png)
+### Transcription
+
+![preview-transcription](docs/pictures/preview/transcription.png)
+
+### History
+
+![preview-transcription](docs/pictures/preview/history.png)
+
+### Analytics
+
+![preview-analytics](docs/pictures/preview/analytics.png)
 
 ## Installation
 
@@ -74,17 +63,21 @@ This automatically downloads all required dependencies and starts the worker and
 3. `whisper.cpp` transcribes the audio.
 4. The transcription is streamed to the web interface.
 5. Start a summary for the current transcription.
+6. View your previous transcripts and summaries as smart sessions
 
 ## Development Prerequisites
 Ensure you have the following dependencies installed before building and running the project:
 
 ### Dependencies
 
+ - [Docker](https://www.docker.com)
  - [CMake](https://cmake.org)
  - [LLVM](https://llvm.org)
+ - [Java](https://openjdk.org)
+ - [Kotlin](https://kotlinlang.org)
  - [Ninja](https://ninja-build.org)
  - [nodejs](https://nodejs.org/)
- - [ffmpeg libraries](https://ffmpeg.org)
+ - [ffmpeg](https://ffmpeg.org)
  - [protobuf](https://protobuf.dev)
  - [grpc](https://grpc.io)
 
@@ -112,7 +105,7 @@ cmake --preset=<os>-64-release --build
 ./build/<os>-64-release/worker models/ggml-tiny.bin 50051
 ```
 
-The worker will now listen for grpc messages at `localhost:50051`
+Where `<os>` is one of `mac`, `win`, `lin`. The worker will now listen for grpc messages at `localhost:50051`
 
 #### Setting Up the Frontend
 ```bash

@@ -3,7 +3,7 @@ download-ggml-model.sh
 services/worker/models
 samples/
 build/
-.cache/1
+.cache/
 # === Gradle ===
 .gradle/
 build/
