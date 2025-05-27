@@ -1,5 +1,7 @@
 import { summarize, type Prompt } from '$lib/grpc/summarizer';
 import type { RequestHandler } from './$types';
+import { type Settings } from '$lib/grpc/gen/settings';
+import { SYSTEM_PROMPT } from '$lib/http/settings';
 
 const ESummarizeStatus = {
     PROCESSING: 'processing',
@@ -23,11 +25,15 @@ export const POST: RequestHandler = async ({ request, locals }) => {
         return new Response('Unauthorized', { status: 401 });
     }
 
-    const clientRequest = (await request.json()) as Prompt;
+    const settings: Settings = {
+        ... await (await fetch('/api/settings')).json(),
+        userId: locals.user.id,
+    };
 
     const summarizeRequest: Prompt = {
-        ...clientRequest,
-        userId: locals.user.id
+        ... await request.json(),
+        userId: locals.user.id,
+        prompt: `<system-prompt>${SYSTEM_PROMPT}</system-prompt>\n<user-prompt>${settings.prompt}</user-prompt>`
     };
 
     const stream = new ReadableStream({

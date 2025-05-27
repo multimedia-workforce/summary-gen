@@ -19,13 +19,7 @@ export async function* streamSummarization(
 ): AsyncGenerator<SummarizeResponse> {
     const response = await fetch("/api/summarize", {
         method: "POST",
-        body: JSON.stringify({
-            transcript,
-            transcriptId,
-            prompt: "Summarize the following transcript",
-            model,
-            temperature
-        } as Prompt),
+        body: JSON.stringify({ transcript, transcriptId, model, temperature } as Prompt),
         signal,
         headers: {
             "Content-Type": "application/json",
