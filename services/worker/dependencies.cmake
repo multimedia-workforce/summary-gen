@@ -9,7 +9,7 @@ CPMAddPackage(
 CPMAddPackage(
         NAME spdlog
         GITHUB_REPOSITORY gabime/spdlog
-        VERSION 1.12.0
+        VERSION 1.15.3
 )
 
 CPMAddPackage(
